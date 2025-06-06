@@ -11,8 +11,7 @@ const registerAdmin = async ({ email, password }) => {
   if (existing) {
     throw new Error(RESPONSE_MESSAGES.ADMIN_EXISTS);
   }
-
-  const hashedPassword = await bcrypt.hash(password, 10);
+   const hashedPassword = await bcrypt.hash(password, 10);
   const admin = await Admin.create({ email, password: hashedPassword, role: ADMIN_ROLE.ADMIN });
   return { message: RESPONSE_MESSAGES.ADMIN_REGISTERED, adminId: admin._id };
 };

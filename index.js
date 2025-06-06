@@ -4,12 +4,16 @@ const dotenv = require("dotenv");
 const adminRoutes = require("./routes/adminRoutes");
 
 dotenv.config();
+
 const app = express();
 app.use(express.json());
 
-mongoose.connect(process.env.MONGO_URI || "mongodb://127.0.0.1:27017/admin_auth")
+const mongoURI = process.env.MONGO_URI || "your_mongodb_atlas_connection_string_here";
+
+mongoose
+  .connect(mongoURI)
   .then(() => console.log("MongoDB connected"))
-  .catch((err) => console.error(err));
+  .catch((err) => console.error("MongoDB connection error:", err));
 
 app.use("/api/admin", adminRoutes);
 

@@ -2,7 +2,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const adminRoutes = require("./routes/adminRoutes");
-
+const mockTestRoutes = require('./routes/mockTestRoutes')
 dotenv.config();
 
 const app = express();
@@ -15,6 +15,7 @@ mongoose
   .catch((err) => console.error("MongoDB connection error:", err));
 
 app.use("/api/admin", adminRoutes);
+app.use("/api/mockTest", mockTestRoutes);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {

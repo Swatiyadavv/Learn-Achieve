@@ -100,7 +100,7 @@ console.log(`Verifying Login OTP for ${email}: ${otp}`);
   const token = jwt.sign(
     { id: admin._id, role: admin.role },
     JWT_SECRET,
-    { expiresIn: "1d" }
+    { expiresIn: "7d" }
   );
 
   return { message: RESPONSE_MESSAGES.LOGIN_SUCCESS, token };

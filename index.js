@@ -5,12 +5,10 @@ const dotenv = require("dotenv");
 const adminRoutes = require("./routes/adminRoutes");
 const mockTestRoutes = require('./routes/mockTestRoutes')
 const packageRoutes = require('./routes/packageRoutes');
-const cors = require('cors')
 dotenv.config();
 const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(cors());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
  const mongoURI = process.env.MONGO_URI || "your_mongodb_atlas_connection_string_here";
 mongoose

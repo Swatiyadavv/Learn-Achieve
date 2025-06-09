@@ -13,7 +13,10 @@ router.delete('/delete/:id', verifyToken, packageController.deletePackage);
 // Get all packages (protected)
 router.get('/get', verifyToken, packageController.getAllPackages);
 // Update package
-router.put('/edit/:id', verifyToken, upload.single('image'), packageController.editPackage);
+router.put('/update/:id', verifyToken, upload.single('image'), packageController.updatePackage);
+
+
+router.get('/search', verifyToken, packageController.searchPackages);
 
 
 module.exports = router;

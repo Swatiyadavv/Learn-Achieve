@@ -60,45 +60,14 @@ const getAllPackages = async (req, res) => {
   }
 };
 
-const editPackage = async (req, res) => {
+const updatePackage = async (req, res) => {
   try {
     const { id } = req.params;
-    const {
-      packageName,
-      className,
-      medium,
-      mockTests,
-      numberOfAttempts,
-      platform,
-      actualPrice,
-      discountPrice,
-      validityInDays,
-    } = req.body;
-
+    const updatedData = req.body;
     const file = req.file;
-    const image = file
-      ? `${req.protocol}://${req.get('host')}/uploads/${file.filename}`
-      : null;
 
-    const mockTestsArray = mockTests
-      ? mockTests.split(',').map((item) => item.trim())
-      : [];
+    const updated = await packageService.updatePackage(id, updatedData, file);
 
-    const updatedData = {
-      packageName,
-      className,
-      medium,
-      mockTests: mockTestsArray,
-      numberOfAttempts,
-      platform,
-      actualPrice,
-      discountPrice,
-      validityInDays,
-    };
-
-    if (image) updatedData.image = image;
-
-    const updated = await packageService.editPackage(id, updatedData);
     res.status(200).json({ message: 'Package updated successfully', package: updated });
   } catch (error) {
     res.status(500).json({ message: 'Failed to update package', error: error.message });
@@ -108,9 +77,26 @@ const editPackage = async (req, res) => {
 
 
 
+const searchPackages = async (req, res) => {
+  try {
+    const { query } = req.query;
+    if (!query) return res.status(400).json({ message: 'Search query missing' });
+
+    const results = await packageService.searchPackages(query);
+    res.status(200).json(results);
+  } catch (error) {
+    res.status(500).json({ message: 'Error during search', error: error.message });
+  }
+};
+
+
+
+
+
 module.exports = {
   addPackage,
   deletePackage,
   getAllPackages,
-  editPackage
+  updatePackage,
+  searchPackages
 };

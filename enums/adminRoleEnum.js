@@ -1,4 +1,5 @@
 const ADMIN_ROLE = {
+  USER: "USER",
   ADMIN: "ADMIN",
 };
 

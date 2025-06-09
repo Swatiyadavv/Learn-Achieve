@@ -1,11 +1,23 @@
 const express = require("express");
 const router = express.Router();
 
-const { register, login } = require("../controller/adminController");
+const adminController = require("../controller/adminController");
 const { protect } = require("../middleware/authMiddleware");
 
-router.post("/register", register);
-router.post("/login", login);
+// Registration + OTP verify
+router.post("/register", adminController.register);
+router.post("/verify-registration-otp", adminController.verifyRegistrationOtp);
+
+// Login step 1 and 2 (OTP verify)
+router.post("/login", adminController.loginStep1);
+router.post("/verify-login-otp", adminController.verifyLoginOtp);
+
+// Password reset
+router.post("/send-reset-otp", adminController.sendResetOtp);
+router.post("/verify-reset-otp", adminController.verifyResetOtp);
+router.post("/reset-password", adminController.resetPassword);
+
+// Protected admin dashboard example
 router.get("/dashboard", protect, (req, res) => {
   res.json({ message: "Welcome Admin", admin: req.admin });
 });

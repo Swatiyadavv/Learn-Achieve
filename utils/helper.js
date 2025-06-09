@@ -30,5 +30,4 @@ const sentOtp = async (email, otp) => {
     console.log(error);
   }
 };
-
 module.exports = { otp, sentOtp };

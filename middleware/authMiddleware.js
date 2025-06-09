@@ -10,7 +10,7 @@ const protect = (req, res, next) => {
     const token = authHeader.split(" ")[1];
     try {
       const decoded = jwt.verify(token, JWT_SECRET);
-      req.admin = decoded; // contains id & role
+      req.admin = decoded; // id & role
       next();
     } catch (err) {
       return res.status(401).json({ message: RESPONSE_MESSAGES.TOKEN_INVALID });

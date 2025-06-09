@@ -26,7 +26,7 @@ const registerAdmin = async ({ email, password }) => {
   });
 
   await sendOtpEmail(email, otp, "Registration Verification");
-
+   console.log(`Registration OTP for ${email}: ${otp}`);
   return { message: RESPONSE_MESSAGES.ADMIN_REGISTERED };
 };
 
@@ -72,6 +72,8 @@ const loginAdminStep1 = async ({ email, password }) => {
   await admin.save();
 
   await sendOtpEmail(email, loginOtp, "Login 2-Step Verification");
+  console.log(`Login OTP for ${email}: ${loginOtp}`);
+
 
   return { message: RESPONSE_MESSAGES.LOGIN_OTP_SENT };
 };
@@ -79,8 +81,8 @@ const loginAdminStep1 = async ({ email, password }) => {
 // Login step 2: Verify OTP and issue JWT token
 const verifyLoginOtp = async ({ email, otp }) => {
   const admin = await Admin.findOne({ email });
-  if (!admin) throw new Error(RESPONSE_MESSAGES.ADMIN_NOT_FOUND);
-
+  
+console.log(`Verifying Login OTP for ${email}: ${otp}`); 
   if (
     admin.loginOtp !== otp ||
     !admin.loginOtpExpire ||
@@ -117,6 +119,8 @@ const sendResetPasswordOtp = async (email) => {
   await admin.save();
 
   await sendOtpEmail(email, otp, "Password Reset");
+  console.log(`Password Reset OTP for ${email}: ${otp}`);
+
 
   return { message: RESPONSE_MESSAGES.OTP_SENT };
 };

@@ -23,3 +23,6 @@ router.get("/dashboard", protect, (req, res) => {
 });
 
 module.exports = router;
+
+
+//eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4NDY2YjBiNTg2YTIyNzViNGU1Y2VjOCIsInJvbGUiOiJBRE1JTiIsImlhdCI6MTc0OTQ0NTgwMywiZXhwIjoxNzQ5NTMyMjAzfQ.yIFME-hhvfnQ-LQUFtjNEIpJlV08Wuf-OPqUy0gvoWY

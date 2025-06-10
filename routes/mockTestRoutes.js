@@ -10,4 +10,6 @@ router.get("/search", protect, mockTestController.searchMockTests);
 router.put("/:id", protect, mockTestController.updateMockTest);
 router.put("/:id/status", protect, mockTestController.changeMockTestStatus);
 router.delete("/:id", protect, mockTestController.deleteMockTest);
+router.get('/paginated', mockTestController.getPaginatedMockTests);
+
 module.exports = router;

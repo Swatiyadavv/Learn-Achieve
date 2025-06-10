@@ -76,6 +76,19 @@ const changeMockTestStatus = async (req, res) => {
   }
 };
 
+const getPaginatedMockTests = async (req, res) => {
+  try {
+    const limit = parseInt(req.query.limit) || 10;
+    const offset = parseInt(req.query.offset) || 0;
+
+    const result = await mockTestService.getPaginatedMockTests(limit, offset);
+    res.json(result);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+};
+
+
 module.exports = {
   createMockTest,
   getAllMockTests,
@@ -83,5 +96,6 @@ module.exports = {
   getMyMockTests,
   updateMockTest,
   deleteMockTest,
-  searchMockTests
+  searchMockTests,
+  getPaginatedMockTests
 };

@@ -124,7 +124,35 @@ const searchPackages = async (query) => {
 //   return await Package.find({ $and: regexArray });
 // };
 
+const deleteMultiplePackages = async (ids) => {
+  const packages = await Package.find({ _id: { $in: ids } });
 
+  for (const pkg of packages) {
+    if (pkg.image) {
+      const imagePath = path.join(__dirname, '..', 'uploads', path.basename(pkg.image));
+      fs.unlink(imagePath, (err) => {
+        if (err) console.error('Failed to delete image:', err);
+      });
+    }
+  }
+
+  await Package.deleteMany({ _id: { $in: ids } });
+};
+
+const getPaginatedPackages = async (limit, offset) => {
+  const total = await Package.countDocuments();
+  const packages = await Package.find()
+    .skip(offset)
+    .limit(limit);
+
+  return {
+    total,
+    count: packages.length,
+    packages,
+    nextOffset: offset + limit < total ? offset + limit : null,
+    prevOffset: offset - limit >= 0 ? offset - limit : null,
+  };
+};
 
 
 module.exports = {
@@ -132,5 +160,7 @@ module.exports = {
   deletePackage,
   getAllPackages,
   updatePackage,
-  searchPackages
+  searchPackages,
+  deleteMultiplePackages,
+  getPaginatedPackages
 };

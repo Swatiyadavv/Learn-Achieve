@@ -61,6 +61,23 @@ const updateMockTestStatus = async (id, adminId, status) => {
   return test;
 };
 
+const getPaginatedMockTests = async (limit, offset) => {
+  const total = await MockTest.countDocuments();
+  const tests = await MockTest.find()
+    .skip(offset)
+    .limit(limit)
+    .sort({ createdAt: -1 }); // Optional: show latest first
+
+  return {
+    total,
+    count: tests.length,
+    limit,
+    offset,
+    data: tests
+  };
+};
+
+
 module.exports = {
   createMockTest,
   getAllMockTests,
@@ -68,6 +85,7 @@ module.exports = {
   updateMockTest,
   deleteMockTest,
   searchMockTests,
-  updateMockTestStatus
+  updateMockTestStatus,
+  getPaginatedMockTests
 };
 

@@ -89,7 +89,40 @@ const searchPackages = async (req, res) => {
   }
 };
 
+const deleteMultiplePackages = async (req, res) => {
+  try {
+    const { ids } = req.body;
 
+    if (!Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({ message: 'Invalid or empty package IDs array' });
+    }
+
+    await packageService.deleteMultiplePackages(ids);
+
+    res.status(200).json({ message: 'Packages deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to delete packages', error: error.message });
+  }
+};
+
+const getPaginatedPackages = async (req, res) => {
+  try {
+    const { limit = 10, offset = 0 } = req.query;
+
+    const limitNum = parseInt(limit);
+    const offsetNum = parseInt(offset);
+
+    if (isNaN(limitNum) || isNaN(offsetNum)) {
+      return res.status(400).json({ message: 'Limit and offset must be valid numbers' });
+    }
+
+    const paginatedData = await packageService.getPaginatedPackages(limitNum, offsetNum);
+    
+    res.status(200).json(paginatedData);
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to fetch packages', error: error.message });
+  }
+};
 
 
 
@@ -98,5 +131,7 @@ module.exports = {
   deletePackage,
   getAllPackages,
   updatePackage,
-  searchPackages
+  searchPackages,
+  deleteMultiplePackages,
+  getPaginatedPackages
 };

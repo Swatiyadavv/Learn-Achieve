@@ -1,22 +1,23 @@
 const MockTest = require("../model/mockTestModel");
 const { mockTestValidation } = require("../validation/mockTestValidation");
 
-const createMockTest = async (data, adminId) => {
+const mockTestService = {
+ createMockTest :async (data, adminId) => {
   const { error } = mockTestValidation.validate(data);
   if (error) throw new Error(error.details[0].message);
   return await MockTest.create({ ...data, createdBy: adminId });
-};
+},
 
-const getAllMockTests = async () => {
+ getAllMockTests :  async () => {
   return await MockTest.find();
-};
+},
 
 
-const getMyMockTests = async (adminId) => {
+ getMyMockTests : async (adminId) => {
   return await MockTest.find({ createdBy: adminId });
-};
+},
 
-const updateMockTest = async (id, data, adminId) => {
+ updateMockTest : async (id, data, adminId) => {
   const { error } = mockTestValidation.validate(data);
   if (error) throw new Error(error.details[0].message);
 
@@ -27,22 +28,22 @@ const updateMockTest = async (id, data, adminId) => {
   );
   if (!test) throw new Error("Not found or unauthorized");
   return test;
-};
+},
 
-const deleteMockTest = async (id, adminId) => {
+ deleteMockTest : async (id, adminId) => {
   const test = await MockTest.findOneAndDelete({ _id: id, createdBy: adminId });
   if (!test) throw new Error("Not found or unauthorized");
   return { message: "Deleted successfully" };
-};
+},
 
-const searchMockTests = async (name, adminId) => {
+ searchMockTests : async (name, adminId) => {
   return await MockTest.find({
     mockTestName: { $regex: name, $options: "i" },
     createdBy: adminId,
   });
-};
+},
 
-const updateMockTestStatus = async (id, adminId, status) => {
+ updateMockTestStatus : async (id, adminId, status) => {
   const validStatuses = ["active", "inactive"];
   if (!validStatuses.includes(status)) {
     throw new Error("Invalid status value");
@@ -53,21 +54,10 @@ const updateMockTestStatus = async (id, adminId, status) => {
     { status },
     { new: true }
   );
-
-  if (!test) {
+   if (!test) {
     throw new Error("MockTest not found or unauthorized");
   }
-
-  return test;
-};
-
-module.exports = {
-  createMockTest,
-  getAllMockTests,
-  getMyMockTests,
-  updateMockTest,
-  deleteMockTest,
-  searchMockTests,
-  updateMockTestStatus
-};
-
+    return test;
+},
+}
+module.exports = mockTestService;

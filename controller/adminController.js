@@ -13,13 +13,14 @@
   try {
     const result = await adminService.verifyRegistrationOtp({
       email: req.admin.email,
-      otp: req.body.otp
+      otp: req.body.otp,
     });
     res.status(200).json(result);
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
 },
+
 
     loginStep1: async (req, res) => {
       try {

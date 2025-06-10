@@ -13,7 +13,7 @@ router.post("/login", adminController.loginStep1);
 router.post("/verify-login-otp", protect, adminController.verifyLoginOtp); 
 
 // Password reset
-router.post("/send-reset-otp", adminController.sendResetOtp);
+router.post("/send-reset-otp", adminController.sendResetOtp); 
 router.post("/verify-reset-otp", protect,adminController.verifyResetOtp);
 router.post("/reset-password", protect,adminController.resetPassword);
 
@@ -22,3 +22,4 @@ router.get("/dashboard", protect, (req, res) => {
   res.json({ message: "Welcome Admin", admin: req.admin });
 });
 module.exports = router;
+

@@ -4,84 +4,70 @@
   const ADMIN_ROLE = require("../enums/adminRoleEnum");
   const RESPONSE_MESSAGES = require("../enums/responseMessageEnum");
   const { generateOtp, sendOtpEmail } = require("./otpService");
-
+  const PendingAdmin = require("../model/pendingAdminModel");
   const JWT_SECRET = process.env.JWT_SECRET || "your_jwt_secret";
   const adminService = {
-  registerAdmin : async ({ email, password }) => {
-    const existing = await Admin.findOne({ email });
-    if (existing) throw new Error(RESPONSE_MESSAGES.ADMIN_EXISTS);
+ 
 
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const otp = generateOtp(6);
-    const otpExpire = new Date(Date.now() + 10 * 60 * 1000); 
+ registerAdmin: async ({ email, password }) => {
+  const existing = await Admin.findOne({ email });
+  if (existing) throw new Error(RESPONSE_MESSAGES.ADMIN_EXISTS);
 
-    const admin = await Admin.create({
-      email,
-      password: hashedPassword,
-      role: ADMIN_ROLE.ADMIN,
-      otp,
-      otpExpire,
-      isVerified: false,
-    });
-    // Issue token
-    const token = jwt.sign(
-      { id: admin._id, role: admin.role },
-      JWT_SECRET,
-      { expiresIn: "7d" }
-    );
-    await sendOtpEmail(email, otp, "Registration Verification");
-    console.log(`Registration OTP for ${email}: ${otp}`);
-    return { message: RESPONSE_MESSAGES.ADMIN_REGISTERED ,token:token};
-  },
+  const existingPending = await PendingAdmin.findOne({ email });
+  if (existingPending) await existingPending.deleteOne();
 
+  const hashedPassword = await bcrypt.hash(password, 10);
+  const otp = generateOtp(6);
+  const otpExpire = new Date(Date.now() + 10 * 60 * 1000);
 
-  // Verify OTP for registration
-  verifyRegistrationOtp : async ({ email, otp }) => {
-    const admin = await Admin.findOne({ email });
-    if (!admin) throw new Error(RESPONSE_MESSAGES.ADMIN_NOT_FOUND);
+  const pending = await PendingAdmin.create({
+    email,
+    password: hashedPassword,
+    otp,
+    otpExpire,
+  });
 
-    if (admin.isVerified)
-      return { message: "Admin already verified, please login." };
+  await sendOtpEmail(email, otp, "Registration Verification");
+   console.log(`Registration OTP for ${email}: ${otp}`);
 
-    if (
-      admin.otp !== otp ||
-      !admin.otpExpire ||
-      admin.otpExpire < new Date()
-    ) {
-      throw new Error(RESPONSE_MESSAGES.OTP_INVALID);
-    }
+  // 🟡 Temporary token for OTP verification
+  const tempToken = jwt.sign(
+    { email: pending.email }, // only email needed
+    JWT_SECRET,
+    { expiresIn: "10m" }
+  );
 
-    admin.isVerified = true;
-    admin.otp = null;
-    admin.otpExpire = null;
-    await admin.save();
+  return { message: RESPONSE_MESSAGES.ADMIN_REGISTERED, token: tempToken };
+},
 
-    return { message: RESPONSE_MESSAGES.OTP_VERIFIED };
-  },
+  verifyRegistrationOtp: async ({ email, otp }) => {
+  const pending = await PendingAdmin.findOne({ email });
+  if (!pending) throw new Error("Pending admin not found");
 
-  // Login step 1: Check email + password, send OTP for 2-step verification
-  //  loginAdminStep1 : async ({ email, password }) => {
-  //   const admin = await Admin.findOne({ email });
-  //   if (!admin) throw new Error(RESPONSE_MESSAGES.ADMIN_NOT_FOUND);
+  if (pending.otp !== otp || !pending.otpExpire || pending.otpExpire < new Date()) {
+    throw new Error(RESPONSE_MESSAGES.OTP_INVALID);
+  }
 
-  //   if (!admin.isVerified) throw new Error("Please verify your account first.");
+  const admin = await Admin.create({
+    email: pending.email,
+    password: pending.password,
+    role: ADMIN_ROLE.ADMIN,
+    isVerified: true,
+  });
 
-  //   const isMatch = await bcrypt.compare(password, admin.password);
-  //   if (!isMatch) throw new Error(RESPONSE_MESSAGES.INVALID_CREDENTIALS);
+  await pending.deleteOne();
 
-  //   const loginOtp = generateOtp(6);
-  //   const loginOtpExpire = new Date(Date.now() + 10 * 60 * 1000);
+  // 🟢 Final token after verified
+  const token = jwt.sign(
+    { id: admin._id, role: admin.role },
+    JWT_SECRET,
+    { expiresIn: "7d" }
+  );
 
-  //   admin.loginOtp = loginOtp;
-  //   admin.loginOtpExpire = loginOtpExpire;
-  //   await admin.save();
+  return { message: RESPONSE_MESSAGES.OTP_VERIFIED, token };
+},
 
-  //   await sendOtpEmail(email, loginOtp, "Login 2-Step Verification");
-  //   console.log(`Login OTP for ${email}: ${loginOtp}`);
-
-
-  //   return { message: RESPONSE_MESSAGES.LOGIN_OTP_SENT };
-  // },
+ 
   loginAdminStep1: async ({ email, password }) => {
     const admin = await Admin.findOne({ email });
     if (!admin) throw new Error(RESPONSE_MESSAGES.ADMIN_NOT_FOUND);

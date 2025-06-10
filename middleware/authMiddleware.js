@@ -1,24 +1,3 @@
-// const jwt = require("jsonwebtoken");
-// const RESPONSE_MESSAGES = require("../enums/responseMessageEnum");
-
-// const JWT_SECRET = process.env.JWT_SECRET || "your_jwt_secret";
-
-// const protect = (req, res, next) => {
-//   const authHeader = req.headers.authorization;
-
-//   if (!authHeader || !authHeader.startsWith("Bearer ")) {
-//     return res.status(401).json({ message: "No token provided" });
-//   }
-
-//   const token = authHeader.split(" ")[1];
-//   try {
-//     const decoded = jwt.verify(token, JWT_SECRET);
-//     req.admin = decoded; // contains id and role
-//     next();
-//   } catch (err) {
-//     res.status(401).json({ message: "Invalid token" });
-//   }
-// };
 const jwt = require("jsonwebtoken");
 const Admin = require("../model/adminModel");
 const JWT_SECRET = process.env.JWT_SECRET || "your_jwt_secret";
@@ -31,17 +10,28 @@ const protect = async (req, res, next) => {
   }
 
   const token = authHeader.split(" ")[1];
+
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
 
-    // ✅ Full admin object laao DB se
-    const admin = await Admin.findById(decoded.id);
-    if (!admin) return res.status(404).json({ message: "Admin not found" });
+    // ✅ CASE 1: Final token after registration/login (has id)
+    if (decoded.id) {
+      const admin = await Admin.findById(decoded.id);
+      if (!admin) return res.status(404).json({ message: "Admin not found" });
 
-    req.admin = admin;
+      req.admin = admin;
+    } 
+    // ✅ CASE 2: Temp token for registration OTP (has only email)
+    else if (decoded.email) {
+      req.admin = { email: decoded.email };
+    } 
+    else {
+      return res.status(401).json({ message: "Invalid token payload" });
+    }
+
     next();
   } catch (err) {
-    res.status(401).json({ message: "Invalid token" });
+    return res.status(401).json({ message: "Invalid or expired token" });
   }
 };
 

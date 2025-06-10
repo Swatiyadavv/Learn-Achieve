@@ -1,8 +1,8 @@
 const Package = require('../model/Package');
 const fs = require('fs');
 const path = require('path');
-
-const addPackage = async ({
+const packageService = {
+ addPackage : async ({
   packageName,
   className,
   medium,
@@ -29,9 +29,9 @@ const addPackage = async ({
 
   await newPackage.save();
   return newPackage;
-};
+},
 
-const deletePackage = async (id) => {
+ deletePackage : async (id) => {
   const packageToDelete = await Package.findById(id);
   if (!packageToDelete) {
     throw new Error('Package not found');
@@ -45,14 +45,14 @@ const deletePackage = async (id) => {
   }
 
   await Package.findByIdAndDelete(id);
-};
+},
 
-const getAllPackages = async () => {
+ getAllPackages : async () => {
   return await Package.find();
-};
+},
 
 
-const updatePackage = async (id, updatedData, file) => {
+ updatePackage : async (id, updatedData, file) => {
   const pkg = await Package.findById(id);
   if (!pkg) throw new Error('Package not found');
 
@@ -100,18 +100,18 @@ const updatePackage = async (id, updatedData, file) => {
 
   await pkg.save();
   return pkg;
-};
+},
 
 
 
 
-const searchPackages = async (query) => {
+ searchPackages : async (query) => {
   const trimmedQuery = query.trim();
 
   return await Package.find({
     packageName: { $regex: `^${trimmedQuery}$`, $options: 'i' } // exact match, case-insensitive
   });
-};
+},
 
 
 // const searchPackages = async (query) => {
@@ -124,7 +124,7 @@ const searchPackages = async (query) => {
 //   return await Package.find({ $and: regexArray });
 // };
 
-const deleteMultiplePackages = async (ids) => {
+ deleteMultiplePackages : async (ids) => {
   const packages = await Package.find({ _id: { $in: ids } });
 
   for (const pkg of packages) {
@@ -137,9 +137,9 @@ const deleteMultiplePackages = async (ids) => {
   }
 
   await Package.deleteMany({ _id: { $in: ids } });
-};
+},
 
-const getPaginatedPackages = async (limit, offset) => {
+ getPaginatedPackages : async (limit, offset) => {
   const total = await Package.countDocuments();
   const packages = await Package.find()
     .skip(offset)
@@ -152,15 +152,7 @@ const getPaginatedPackages = async (limit, offset) => {
     nextOffset: offset + limit < total ? offset + limit : null,
     prevOffset: offset - limit >= 0 ? offset - limit : null,
   };
-};
+},
+}
 
-
-module.exports = {
-  addPackage,
-  deletePackage,
-  getAllPackages,
-  updatePackage,
-  searchPackages,
-  deleteMultiplePackages,
-  getPaginatedPackages
-};
+module.exports = packageService;

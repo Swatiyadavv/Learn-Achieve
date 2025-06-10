@@ -1,6 +1,6 @@
 const packageService = require('../service/packageService');
-
-const addPackage = async (req, res) => {
+const packageController = {
+   addPackage : async (req, res) => {
   try {
     const {
       packageName,
@@ -37,9 +37,9 @@ const addPackage = async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: 'Failed to add package', error: error.message });
   }
-};
+},
 
-const deletePackage = async (req, res) => {
+ deletePackage : async (req, res) => {
   try {
     const { id } = req.params;
 
@@ -49,18 +49,18 @@ const deletePackage = async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: 'Failed to delete package', error: error.message });
   }
-};
+},
 
-const getAllPackages = async (req, res) => {
+ getAllPackages : async (req, res) => {
   try {
     const all = await packageService.getAllPackages();
     res.status(200).json(all);
   } catch (err) {
     res.status(500).json({ message: 'Error fetching packages', error: err.message });
   }
-};
+},
 
-const updatePackage = async (req, res) => {
+ updatePackage : async (req, res) => {
   try {
     const { id } = req.params;
     const updatedData = req.body;
@@ -72,12 +72,11 @@ const updatePackage = async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: 'Failed to update package', error: error.message });
   }
-};
+},
 
 
 
-
-const searchPackages = async (req, res) => {
+ searchPackages : async (req, res) => {
   try {
     const { query } = req.query;
     if (!query) return res.status(400).json({ message: 'Search query missing' });
@@ -87,9 +86,9 @@ const searchPackages = async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: 'Error during search', error: error.message });
   }
-};
+},
 
-const deleteMultiplePackages = async (req, res) => {
+ deleteMultiplePackages : async (req, res) => {
   try {
     const { ids } = req.body;
 
@@ -103,9 +102,9 @@ const deleteMultiplePackages = async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: 'Failed to delete packages', error: error.message });
   }
-};
+},
 
-const getPaginatedPackages = async (req, res) => {
+ getPaginatedPackages : async (req, res) => {
   try {
     const { limit = 10, offset = 0 } = req.query;
 
@@ -122,16 +121,6 @@ const getPaginatedPackages = async (req, res) => {
   } catch (error) {
     res.status(500).json({ message: 'Failed to fetch packages', error: error.message });
   }
-};
-
-
-
-module.exports = {
-  addPackage,
-  deletePackage,
-  getAllPackages,
-  updatePackage,
-  searchPackages,
-  deleteMultiplePackages,
-  getPaginatedPackages
-};
+},
+}
+module.exports =packageController ;

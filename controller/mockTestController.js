@@ -19,7 +19,6 @@ const mockTestController ={
   res.json(tests);
 },
 
-
  getMyMockTests : async (req, res) => {
   const tests = await mockTestService.getMyMockTests(req.admin.id);
   res.json(tests);
@@ -46,7 +45,6 @@ const mockTestController ={
   }
 },
 
-
  deleteMockTest : async (req, res) => {
   try {
     const result = await mockTestService.deleteMockTest(req.params.id, req.admin.id);
@@ -55,8 +53,15 @@ const mockTestController ={
     res.status(400).json({ message: err.message });
   }
 },
-
- searchMockTests : async (req, res) => {
+allDeleteMockTest: async (req, res) => {
+  try {
+    const result = await mockTestService.allDeleteMockTests(req.admin.id);
+    res.json(result);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+},
+searchMockTests : async (req, res) => {
   const { name } = req.body;
   const tests = await mockTestService.searchMockTests(name, req.admin.id);
   res.json(tests);

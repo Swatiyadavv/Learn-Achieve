@@ -12,9 +12,15 @@ const mockTestService = {
   return await MockTest.find();
 },
 
-
- getMyMockTests : async (adminId) => {
+getMyMockTests : async (adminId) => {
   return await MockTest.find({ createdBy: adminId });
+},
+
+allDeleteMockTests: async (adminId) => {
+  const result = await MockTest.deleteMany({ createdBy: adminId });
+  return {
+    message: `${result.deletedCount} mock test(s) deleted successfully`
+  };
 },
 
  updateMockTest : async (id, data, adminId) => {
@@ -48,7 +54,6 @@ const mockTestService = {
   if (!validStatuses.includes(status)) {
     throw new Error("Invalid status value");
   }
-
   const test = await MockTest.findOneAndUpdate(
     { _id: id, createdBy: adminId },
     { status },

@@ -17,6 +17,7 @@ router.put('/update/:id', verifyToken, upload.single('image'), packageController
 
 
 router.get('/search', verifyToken, packageController.searchPackages);
-
+router.delete('/delete-multiple', verifyToken, packageController.deleteMultiplePackages);
+router.get('/paginated', packageController.getPaginatedPackages);
 
 module.exports = router;

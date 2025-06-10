@@ -57,7 +57,22 @@ const mockTestService = {
    if (!test) {
     throw new Error("MockTest not found or unauthorized");
   }
-    return test;
+
+  return test;
 },
+  getPaginatedPackages : async (limit, offset) => {
+    const total = await MockTest.countDocuments();
+    const packages = await MockTest.find()
+      .skip(offset)
+      .limit(limit);
+  
+    return {
+      total,
+      count: packages.length,
+      packages,
+      nextOffset: offset + limit < total ? offset + limit : null,
+      prevOffset: offset - limit >= 0 ? offset - limit : null,
+    };
+  },
 }
-module.exports = mockTestService;
+  module.exports = mockTestService;

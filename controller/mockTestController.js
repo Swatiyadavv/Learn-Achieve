@@ -75,5 +75,24 @@ const mockTestController ={
     res.status(400).json({ message: err.message });
   }
 },
+
+getPaginatedPackages : async (req, res) => {
+  try {
+    const { limit = 10, offset = 0 } = req.query;
+
+    const limitNum = parseInt(limit);
+    const offsetNum = parseInt(offset);
+
+    if (isNaN(limitNum) || isNaN(offsetNum)) {
+      return res.status(400).json({ message: 'Limit and offset must be valid numbers' });
+    }
+
+    const paginatedData = await mockTestService.getPaginatedPackages(limitNum, offsetNum);
+    
+    res.status(200).json(paginatedData);
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to fetch packages', error: error.message });
+  }
+},
 }
 module.exports = mockTestController;

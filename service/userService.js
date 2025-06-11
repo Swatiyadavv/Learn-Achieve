@@ -95,6 +95,87 @@ verifyRegistrationOtp: async (token, otp) => {
   return { message: RESPONSE.LOGIN_SUCCESS, token: loginToken };
 },
 
+
+
+sendResetOtp: async (email) => {
+  const user = await User.findOne({ email });
+  if (!user) throw new Error(RESPONSE.USER_NOT_FOUND);
+
+  const otp = otpUtils.otp(6);
+  const otpExpire = new Date(Date.now() + 10 * 60 * 1000);
+
+  user.loginOtp = otp;
+  user.loginOtpExpire = otpExpire;
+  await user.save();
+
+  await otpUtils.sentOtp(email, otp);
+
+  const token = jwt.sign({ email }, JWT_SECRET, { expiresIn: "15m" });
+
+  return { message: "Reset OTP sent to email.", token };
+},
+
+// verifyResetOtp:async (token, otp) => {
+//   const decoded = jwt.verify(token, JWT_SECRET);
+//   const email = decoded.email;
+
+//   const user = await User.findOne({ email });
+//   if (!user || user.loginOtp !== otp || user.loginOtpExpire < new Date()) {
+//     throw new Error(RESPONSE.OTP_INVALID);
+//   }
+
+//   user.loginOtp = null;
+//   user.loginOtpExpire = null;
+//   await user.save();
+
+//   return { message: "Reset OTP verified successfully." };
+// },
+verifyResetOtp: async (token, otp) => {
+  const decoded = jwt.verify(token, JWT_SECRET);
+  const email = decoded.email;
+
+  const user = await User.findOne({ email });
+  if (!user || user.loginOtp !== otp || user.loginOtpExpire < new Date()) {
+    throw new Error(RESPONSE.OTP_INVALID);
+  }
+
+  user.loginOtp = null;
+  user.loginOtpExpire = null;
+  await user.save();
+
+  // 🟡 Issue new token for secure password reset
+  const resetToken = jwt.sign({ email }, JWT_SECRET, { expiresIn: "15m" });
+
+  return {
+    message: "Reset OTP verified successfully.",
+    token: resetToken
+  };
+},
+
+
+resetPassword: async (token, newPassword) => {
+  const decoded = jwt.verify(token, JWT_SECRET);
+  const email = decoded.email;
+
+  const user = await User.findOne({ email });
+  if (!user) throw new Error(RESPONSE.USER_NOT_FOUND);
+
+  const hashed = await bcrypt.hash(newPassword, 10);
+  user.password = hashed;
+  await user.save();
+
+  return { message: "Password has been reset successfully." };
+},
+
 };
 
+
+
+
+
 module.exports = userService;
+
+
+
+
+

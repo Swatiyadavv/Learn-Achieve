@@ -39,3 +39,43 @@ exports.verifyLogin = async (req, res) => {
   }
 };
 
+
+
+
+
+exports.sendResetOtp = async (req, res) => {
+  try {
+    const result = await userService.sendResetOtp(req.body.email);
+    res.json(result);
+  } catch (e) {
+    res.status(400).json({ message: e.message });
+  }
+};
+
+exports.verifyResetOtp = async (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(" ")[1];
+    const result = await userService.verifyResetOtp(token, req.body.otp);
+    res.json(result);
+  } catch (e) {
+    res.status(400).json({ message: e.message });
+  }
+};
+
+exports.resetPassword = async (req, res) => {
+  try {
+    const token = req.headers.authorization?.split(" ")[1];
+    const newPassword = req.body.newPassword;
+
+    if (!newPassword) {
+      return res.status(400).json({ message: "New password is required" });
+    }
+
+    const result = await userService.resetPassword(token, newPassword);
+    res.json(result);
+  } catch (e) {
+    res.status(400).json({ message: e.message });
+  }
+};
+
+

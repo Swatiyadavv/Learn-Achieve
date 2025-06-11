@@ -31,6 +31,12 @@ const RESPONSE_MESSAGES = {
   LOGIN_OTP_SENT: "Login OTP sent",
   LOGIN_SUCCESS: "Login successful",
 
+
+  RESET_OTP_SENT: "Reset OTP sent to email.",
+RESET_OTP_VERIFIED: "Reset OTP verified successfully.",
+PASSWORD_RESET_SUCCESS: "Password has been reset successfully.",
+
+
 };
 
 module.exports = RESPONSE_MESSAGES;

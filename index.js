@@ -5,6 +5,8 @@ const dotenv = require("dotenv");
 const adminRoutes = require("./routes/adminRoutes");
 const mockTestRoutes = require('./routes/mockTestRoutes')
 const packageRoutes = require('./routes/packageRoutes');
+const userRoutes = require("./routes/userRoutes");
+
 const cors = require('cors')
 dotenv.config();
 const app = express();
@@ -20,6 +22,7 @@ mongoose
 app.use("/api/admin", adminRoutes);
 app.use("/api/mockTest", mockTestRoutes);
 app.use('/api/packages', packageRoutes);
+app.use('/api/users' , userRoutes)
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

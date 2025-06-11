@@ -36,7 +36,28 @@ const cartController = {
     } catch (err) {
       res.status(400).json({ message: err.message });
     }
+  },
+
+  removeMultipleFromCart: async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { packageIds } = req.body; 
+
+    if (!Array.isArray(packageIds) || packageIds.length === 0) {
+      return res.status(400).json({ message: 'packageIds array is required' });
+    }
+
+    const cart = await cartService.removeMultipleFromCart(userId, packageIds);
+    res.status(200).json({ message: 'Selected packages removed from cart', cart });
+
+  } catch (err) {
+    res.status(400).json({ message: err.message });
   }
+}
+  
 };
+
+
+
 
 module.exports = cartController;

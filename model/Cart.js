@@ -13,6 +13,10 @@ const cartSchema = new mongoose.Schema({
         ref: 'Package',
         required: true
       },
+      quantity: {
+        type: Number,
+        default: 1
+      },
       addedAt: {
         type: Date,
         default: Date.now

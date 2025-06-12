@@ -22,4 +22,3 @@ router.get("/dashboard", protect, (req, res) => {
   res.json({ message: "Welcome Admin", admin: req.admin });
 });
 module.exports = router;
-

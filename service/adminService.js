@@ -30,14 +30,14 @@
   await sendOtpEmail(email, otp, "Registration Verification");
    console.log(`Registration OTP for ${email}: ${otp}`);
 
-  // 🟡 Temporary token for OTP verification
+  //  Temporary token for OTP verification
   const tempToken = jwt.sign(
     { email: pending.email }, // only email needed
     JWT_SECRET,
     { expiresIn: "10m" }
   );
 
-  return { message: RESPONSE_MESSAGES.ADMIN_REGISTERED, token: tempToken };
+  return { message: RESPONSE_MESSAGES.ADMIN_REGISTERED, token: tempToken ,otp: otp };
 },
 
   verifyRegistrationOtp: async ({ email, otp }) => {
@@ -57,7 +57,7 @@
 
   await pending.deleteOne();
 
-  // 🟢 Final token after verified
+  //  Final token after verified
   const token = jwt.sign(
     { id: admin._id, role: admin.role },
     JWT_SECRET,
@@ -87,7 +87,7 @@
     await sendOtpEmail(email, loginOtp, "Login 2-Step Verification");
     console.log(`Login OTP for ${email}: ${loginOtp}`);
 
-    // ✅ Create short-lived token for verifying OTP (step 2)
+   
     const token = jwt.sign(
       { id: admin._id, email: admin.email, role: admin.role },
       JWT_SECRET,
@@ -96,7 +96,7 @@
 
     return {
       message: RESPONSE_MESSAGES.LOGIN_OTP_SENT,
-      token: token // ✅ now this will be visible in Postman
+      token: token //  now this will be visible in Postman
     };
   },
 
@@ -169,6 +169,7 @@
   resetPassword : async ({ email, newPassword }) => {
     const admin = await Admin.findOne({ email });
     if (!admin) throw new Error(RESPONSE_MESSAGES.ADMIN_NOT_FOUND);
+
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
     admin.password = hashedPassword;

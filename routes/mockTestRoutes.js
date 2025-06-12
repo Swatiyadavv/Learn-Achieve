@@ -4,12 +4,12 @@ const { protect } = require("../middleware/authMiddleware");
 const mockTestController = require("../controller/mockTestController");
 
 router.post("/create", protect, mockTestController.createMockTest);
-router.get("/all", mockTestController.getAllMockTests);
+router.get("/all", protect, mockTestController.getAllMockTests);
 router.get("/my-tests", protect, mockTestController.getMyMockTests);
 router.get("/search", protect, mockTestController.searchMockTests);
 router.put("/:id", protect, mockTestController.updateMockTest);
 router.put("/:id/status", protect, mockTestController.changeMockTestStatus);
 router.delete("/:id", protect, mockTestController.deleteMockTest);
-router.get('/paginated', mockTestController.getPaginatedPackages);
+router.get('/paginated',protect, mockTestController.getPaginatedPackages);
 router.delete("/deleteAll", protect, mockTestController.allDeleteMockTest);
 module.exports = router;

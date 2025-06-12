@@ -72,6 +72,16 @@
         res.status(400).json({ message: err.message });
       }
     },
-  };
 
-  module.exports = adminController;
+
+ getAdminDetails: async (req, res) => {
+  try {
+    const result = await adminService.getAdminDetails(req.admin._id);
+    res.status(200).json(result);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+},
+  }
+ 
+module.exports = adminController;

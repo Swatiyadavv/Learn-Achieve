@@ -177,6 +177,14 @@
 
     return { message: RESPONSE_MESSAGES.PASSWORD_RESET_SUCCESS };
   },
+
+
+  getAdminDetails: async (adminId) => {
+  const admin = await Admin.findById(adminId).select("-__v -otp -otpExpire -loginOtp -loginOtpExpire");
+  if (!admin) throw new Error("Admin not found");
+  return admin;
+},
+
   }
   module.exports = adminService; 
 

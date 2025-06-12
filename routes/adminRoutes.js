@@ -17,6 +17,10 @@ router.post("/send-reset-otp", adminController.sendResetOtp);
 router.post("/verify-reset-otp", protect,adminController.verifyResetOtp);
 router.post("/reset-password", protect,adminController.resetPassword);
 
+//get admin details 
+router.get("/me", protect, adminController.getAdminDetails);
+
+
 // Protected admin dashboard example
 router.get("/dashboard", protect, (req, res) => {
   res.json({ message: "Welcome Admin", admin: req.admin });

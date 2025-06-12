@@ -123,4 +123,4 @@ const packageController = {
   }
 },
 }
-module.exports =packageController ;
+module.exports =packageController;

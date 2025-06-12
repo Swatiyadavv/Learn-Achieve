@@ -20,4 +20,6 @@ router.get('/search', verifyToken, packageController.searchPackages);
 router.delete('/delete-multiple', verifyToken, packageController.deleteMultiplePackages);
 router.get('/paginated', packageController.getPaginatedPackages);
 
+// users
+router.get('/packages', packageController.getAllPackages);
 module.exports = router;

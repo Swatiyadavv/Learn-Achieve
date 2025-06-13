@@ -65,13 +65,6 @@ allDeleteMockTests: async (adminId) => {
 
   return test;
 },
-// searchMockTest: async (query) => {
-//   const trimmedQuery = query.trim();
-
-//   return await MockTest.find({
-//      mockTestName: { $regex: `^${trimmedQuery}`, $options: 'i' }// exact match, case-insensitive
-//   });
-// },
 searchMockTest: async (query) => {
   const trimmedQuery = query.trim();
 
@@ -79,6 +72,7 @@ searchMockTest: async (query) => {
      mockTestName: { $regex: `^${trimmedQuery}`, $options: 'i' }// exact match, case-insensitive
   });
 },
+
 
   getPaginatedPackages : async (limit, offset) => {
     const total = await MockTest.countDocuments();

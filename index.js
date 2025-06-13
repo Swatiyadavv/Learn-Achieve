@@ -8,6 +8,7 @@ const packageRoutes = require('./routes/packageRoutes');
 const userRoutes = require("./routes/userRoutes");
 const publicPackageRoutes = require('./routes/publicPackageRoutes');
 const cartRoutes = require('./routes/cartRoutes');
+const orderRoutes = require('./routes/orderRoutes');
 
 const cors = require('cors')
 dotenv.config();
@@ -25,7 +26,7 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/mockTest", mockTestRoutes);
 app.use('/api/packages', packageRoutes);
 app.use('/api/users' , userRoutes);
-
+app.use('/api/order',orderRoutes);
 app.use('/api/cart', cartRoutes);
 app.use('/api/user', publicPackageRoutes); 
 

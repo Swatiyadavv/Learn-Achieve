@@ -3,7 +3,6 @@ dotenv.config();
 
 const nodemailer = require("nodemailer");
 
-// Generate numeric OTP of given length (default 6)
 function otp(n = 6) {
   let generatedOtp = "";
   for (let i = 0; i < n; i++) {

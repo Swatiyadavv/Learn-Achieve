@@ -25,18 +25,24 @@ const cartController = {
     }
   },
 
-  removeFromCart: async (req, res) => {
-    try {
-      const userId = req.user.id;
-      const { packageId } = req.params;
+ removeFromCart: async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { packageId } = req.params;
 
-      const cart = await cartService.removeFromCart(userId, packageId);
-      res.status(200).json({ message: 'Package removed from cart', cart });
+    const cart = await cartService.removeFromCart(userId, packageId);
 
-    } catch (err) {
-      res.status(400).json({ message: err.message });
+    if (!cart) {
+      return res.status(200).json({ message: 'Cart is now empty and has been deleted' });
     }
-  },
+
+    res.status(200).json({ message: 'Package removed from cart', cart });
+
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+},
+
 
   removeMultipleFromCart: async (req, res) => {
   try {

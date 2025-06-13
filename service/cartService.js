@@ -11,12 +11,14 @@ const addToCart = async (userId, packageId) => {
     cart = new Cart({ userId, packages: [] });
   }
 
+  // Check if the same package already exists in cart
   const existingItem = cart.packages.find(p => p.packageId.equals(packageId));
   if (existingItem) {
-    existingItem.quantity += 1;
-  } else {
-    cart.packages.push({ packageId, quantity: 1 });
+    throw new Error('Package already in cart');
   }
+
+  // Add new package with quantity 1
+  cart.packages.push({ packageId, quantity: 1 });
 
   await cart.save();
   return cart;
@@ -52,13 +54,21 @@ const removeFromCart = async (userId, packageId) => {
 
   if (cart.packages[index].quantity > 1) {
     cart.packages[index].quantity -= 1;
+    await cart.save();
+    return cart;
   } else {
     cart.packages.splice(index, 1);
-  }
 
-  await cart.save();
-  return cart;
+    if (cart.packages.length === 0) {
+      await Cart.deleteOne({ _id: cart._id });
+      return null;
+    } else {
+      await cart.save();
+      return cart;
+    }
+  }
 };
+
 
 const removeMultipleFromCart = async (userId, packageIds) => {
   const cart = await Cart.findOne({ userId });

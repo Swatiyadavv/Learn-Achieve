@@ -13,10 +13,6 @@ const cartSchema = new mongoose.Schema({
         ref: 'Package',
         required: true
       },
-      quantity: {
-        type: Number,
-        default: 1
-      },
       addedAt: {
         type: Date,
         default: Date.now
@@ -24,5 +20,6 @@ const cartSchema = new mongoose.Schema({
     }
   ]
 }, { timestamps: true });
+
 
 module.exports = mongoose.model('Cart', cartSchema);

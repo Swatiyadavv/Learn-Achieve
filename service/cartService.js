@@ -11,13 +11,12 @@ const addToCart = async (userId, packageId) => {
     cart = new Cart({ userId, packages: [] });
   }
 
-  // Check if the same package already exists in cart
+
   const existingItem = cart.packages.find(p => p.packageId.equals(packageId));
   if (existingItem) {
     throw new Error('Package already in cart');
   }
 
-  // Add new package with quantity 1
   cart.packages.push({ packageId, quantity: 1 });
 
   await cart.save();

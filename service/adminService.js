@@ -54,9 +54,7 @@
     role: ADMIN_ROLE.ADMIN,
     isVerified: true,
   });
-
   await pending.deleteOne();
-
   //  Final token after verified
   const token = jwt.sign(
     { id: admin._id, role: admin.role },
@@ -96,7 +94,8 @@
 
     return {
       message: RESPONSE_MESSAGES.LOGIN_OTP_SENT,
-      token: token //  now this will be visible in Postman
+      token: token, //  now this will be visible in Postman
+      otp:loginOtp
     };
   },
 
@@ -120,9 +119,8 @@
     const token = jwt.sign(
       { id: admin._id, role: admin.role },
       JWT_SECRET,
-      { expiresIn: "7d" }
+      { expiresIn: "30d" }
     );
-
     return { message: "Login successful", token };
   },
   // Password reset: send OTP
@@ -184,7 +182,6 @@
   if (!admin) throw new Error("Admin not found");
   return admin;
 },
-
-  }
+}
   module.exports = adminService; 
 

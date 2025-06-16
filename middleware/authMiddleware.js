@@ -4,12 +4,11 @@ const JWT_SECRET = process.env.JWT_SECRET || "your_jwt_secret";
 
 const protect = async (req, res, next) => {
   const authHeader = req.headers.authorization;
-
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
     return res.status(401).json({ message: "No token provided" });
   }
 
-  const token = authHeader.split(" ")[1];
+ const token = authHeader.split(" ")[1];
 
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
@@ -18,8 +17,7 @@ const protect = async (req, res, next) => {
     if (decoded.id) {
       const admin = await Admin.findById(decoded.id);
       if (!admin) return res.status(404).json({ message: "Admin not found" });
-
-      req.admin = admin;
+    req.admin = admin;
     } 
     // ✅ CASE 2: Temp token for registration OTP (has only email)
     else if (decoded.email) {

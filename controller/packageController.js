@@ -104,7 +104,7 @@ const packageController = {
   }
 },
 
- getPaginatedPackages : async (req, res) => {
+ getPaginatedPackages : async (req, res)  => {
   try {
     const { limit = 10, offset = 0 } = req.query;
 

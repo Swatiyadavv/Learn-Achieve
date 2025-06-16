@@ -1,18 +1,24 @@
 const mockTestService = require("../service/mockTestService");
 const mockTestController ={
- createMockTest : async (req, res) => {
+createandUpdate: async (req, res) => {
   try {
-    const data = { ...req.body,
+    const data = {
+      ...req.body,
       medium: req.body.medium ? req.body.medium.split(",").map(s => s.trim()) : [],
       class: req.body.class ? req.body.class.split(",").map(s => s.trim()) : [],
       subjects: req.body.subjects ? req.body.subjects.split(",").map(s => s.trim()) : [],
-    }
-    const result = await mockTestService.createMockTest(data, req.admin.id);
-    res.status(201).json(result);
+    };
+
+    const id = req.params.id || null;
+
+    const result = await mockTestService.createandUpdate(data, req.admin.id, id);
+
+    res.status(id ? 200 : 201).json(result);
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
 },
+
 
  getAllMockTests : async (req, res) => {
   const tests = await mockTestService.getAllMockTests();
@@ -22,27 +28,6 @@ const mockTestController ={
  getMyMockTests : async (req, res) => {
   const tests = await mockTestService.getMyMockTests(req.admin.id);
   res.json(tests);
-},
-
- updateMockTest : async (req, res) => {
-  try {
-    const data = {
-      ...req.body,
-      medium: req.body.medium ? req.body.medium.split(",").map(s => s.trim()) : undefined,
-      class: req.body.class ? req.body.class.split(",").map(s => s.trim()) : undefined,
-      subjects: req.body.subjects ? req.body.subjects.split(",").map(s => s.trim()) : undefined,
-    };
-
-  
-    Object.keys(data).forEach(key => {
-      if (data[key] === undefined) delete data[key];
-    });
-
-    const test = await mockTestService.updateMockTest(req.params.id, data, req.admin.id);
-    res.json(test);
-  } catch (err) {
-    res.status(400).json({ message: err.message });
-  }
 },
 
  deleteMockTest : async (req, res) => {

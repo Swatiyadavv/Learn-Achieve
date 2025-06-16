@@ -2,11 +2,26 @@ const MockTest = require("../model/mockTestModel");
 const { mockTestValidation } = require("../validation/mockTestValidation");
 
 const mockTestService = {
- createMockTest :async (data, adminId) => {
+
+ createandUpdate: async (data, adminId, id = null) => {
   const { error } = mockTestValidation.validate(data);
   if (error) throw new Error(error.details[0].message);
-  return await MockTest.create({ ...data, createdBy: adminId });
+
+  if (id) {
+    // Update
+    const updated = await MockTest.findOneAndUpdate(
+      { _id: id, createdBy: adminId },
+      data,
+      { new: true }
+    );
+    if (!updated) throw new Error("Not found or unauthorized");
+    return updated;
+  } else {
+    // Create
+    return await MockTest.create({ ...data, createdBy: adminId });
+  }
 },
+
 
  getAllMockTests :  async () => {
   return await MockTest.find();
@@ -21,19 +36,6 @@ allDeleteMockTests: async (adminId) => {
   return {
     message: `${result.deletedCount} mock test(s) deleted successfully`
   };
-},
-
- updateMockTest : async (id, data, adminId) => {
-  const { error } = mockTestValidation.validate(data);
-  if (error) throw new Error(error.details[0].message);
-
-  const test = await MockTest.findOneAndUpdate(
-    { _id: id, createdBy: adminId },
-    data,
-    { new: true }
-  );
-  if (!test) throw new Error("Not found or unauthorized");
-  return test;
 },
 
  deleteMockTest : async (id, adminId) => {

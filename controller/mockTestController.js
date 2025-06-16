@@ -46,11 +46,18 @@ allDeleteMockTest: async (req, res) => {
     res.status(400).json({ message: err.message });
   }
 },
-searchMockTests : async (req, res) => {
-  const { name } = req.body;
-  const tests = await mockTestService.searchMockTests(name, req.admin.id);
-  res.json(tests);
+ searchMockTest : async (req, res) => {
+  try {
+    const { query } = req.query;
+    if (!query) return res.status(400).json({ message: 'Search query missing' });
+
+    const results = await mockTestService.searchMockTest(query);
+    res.status(200).json(results);
+  } catch (error) {
+    res.status(500).json({ message: 'Error during search', error: error.message });
+  }
 },
+
 
 
  changeMockTestStatus : async (req, res) => {

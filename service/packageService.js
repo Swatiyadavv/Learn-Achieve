@@ -85,9 +85,8 @@ const packageService = {
     }
   }
 
-  // Update image if new file uploaded
   if (file) {
-    // Delete old image file if exists
+  
     if (pkg.image) {
       const oldImagePath = path.join(__dirname, '..', 'uploads', path.basename(pkg.image));
       fs.unlink(oldImagePath, (err) => {
@@ -109,7 +108,7 @@ const packageService = {
   const trimmedQuery = query.trim();
 
   return await Package.find({
-    packageName: { $regex: `^${trimmedQuery}$`, $options: 'i' } // exact match, case-insensitive
+     packageName: { $regex: `^${trimmedQuery}`, $options: 'i' }// exact match, case-insensitive
   });
 },
 

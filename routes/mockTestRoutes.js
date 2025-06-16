@@ -12,6 +12,3 @@ router.delete("/:id", protect, mockTestController.deleteMockTest);           // 
 router.get('/paginated',protect, mockTestController.getPaginatedPackages);     // paginated 
 router.delete("/deleteAll", protect, mockTestController.allDeleteMockTest);        // delete all
 module.exports = router;
-
-
-    

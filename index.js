@@ -10,7 +10,7 @@ const publicPackageRoutes = require('./routes/publicPackageRoutes');
 const cartRoutes = require('./routes/cartRoutes');
 const orderRoutes = require('./routes/orderRoutes');
 const mockTestfetch = require('./routes/mockTestUserRoute')
-
+const subjectRoutes = require('./routes/subjectRoutes');
 const cors = require('cors')
 dotenv.config();
 const app = express();
@@ -31,6 +31,7 @@ app.use('/api/order',orderRoutes);
 app.use('/api/cart', cartRoutes);
 app.use('/api/user', publicPackageRoutes); 
 app.use('/api/mockTestfetch', mockTestfetch);
+app.use('/api/subject', subjectRoutes);
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

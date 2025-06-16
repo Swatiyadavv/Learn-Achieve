@@ -9,6 +9,7 @@ const userRoutes = require("./routes/userRoutes");
 const publicPackageRoutes = require('./routes/publicPackageRoutes');
 const cartRoutes = require('./routes/cartRoutes');
 const orderRoutes = require('./routes/orderRoutes');
+const classMasterRoutes = require('./routes/classMasterRoutes');
 
 const cors = require('cors')
 dotenv.config();
@@ -29,7 +30,7 @@ app.use('/api/users' , userRoutes);
 app.use('/api/order',orderRoutes);
 app.use('/api/cart', cartRoutes);
 app.use('/api/user', publicPackageRoutes); 
-
+app.use('/api/classMaster',classMasterRoutes)
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

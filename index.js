@@ -10,7 +10,7 @@ const publicPackageRoutes = require('./routes/publicPackageRoutes');
 const cartRoutes = require('./routes/cartRoutes');
 const orderRoutes = require('./routes/orderRoutes');
 const classMasterRoutes = require('./routes/classMasterRoutes');
-
+const blogRoutes = require('./routes/blogRoutes')
 const cors = require('cors')
 dotenv.config();
 const app = express();

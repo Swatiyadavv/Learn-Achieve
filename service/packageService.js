@@ -100,6 +100,21 @@ const packageService = {
   await pkg.save();
   return pkg;
 },
+ getPaginatedPackages: async (limit, offset) => {
+    const total = await Package.countDocuments();
+    const packages = await Package.find()
+      .skip(offset)
+      .limit(limit)
+      .sort({ createdAt: -1 }); // Optional: sort by latest
+
+    return {
+      total,
+      count: packages.length,
+      packages,
+      nextOffset: offset + limit < total ? offset + limit : null,
+      prevOffset: offset - limit >= 0 ? offset - limit : null,
+    };
+  },
 
 
 

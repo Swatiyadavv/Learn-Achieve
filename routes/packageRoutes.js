@@ -19,6 +19,10 @@ router.put('/update/:id', verifyToken, upload.single('image'), packageController
 router.get('/search', verifyToken, packageController.searchPackages);
 router.delete('/delete-multiple', verifyToken, packageController.deleteMultiplePackages);
 router.get('/paginated', packageController.getPaginatedPackages);
+//get packages with paginated
+router.get('/paginated', verifyToken, packageController.getPaginatedPackages);
+// GET /api/package/paginated?limit=5&offset=0 -->route of paginated get api 
+
 
 // users
 router.get('/packages', packageController.getAllPackages);

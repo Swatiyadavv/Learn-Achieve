@@ -59,6 +59,24 @@ const packageController = {
     res.status(500).json({ message: 'Error fetching packages', error: err.message });
   }
 },
+getPaginatedPackages: async (req, res) => {
+    try {
+      const { limit = 10, offset = 0 } = req.query;
+
+      const limitNum = parseInt(limit);
+      const offsetNum = parseInt(offset);
+
+      if (isNaN(limitNum) || isNaN(offsetNum)) {
+        return res.status(400).json({ message: 'Limit and offset must be numbers' });
+      }
+
+      const data = await packageService.getPaginatedPackages(limitNum, offsetNum);
+
+      res.status(200).json(data);
+    } catch (error) {
+      res.status(500).json({ message: 'Failed to fetch paginated packages', error: error.message });
+    }
+  },
 
  updatePackage : async (req, res) => {
   try {

@@ -1,35 +1,15 @@
-const orderService = require('../service/orderService');
-const { assignMockTestsToUser } = require('../service/mockTestUserService');
+// controller/mockTestUserController.js
 
-const orderController = {
-  placeOrderFromCart: async (req, res) => {
-    try {
-      const userId = req.user.id;
-      const order = await orderService.placeOrderFromCart(userId);
+const UserMockTest = require('../model/mockTestUser');
 
-      await assignMockTestsToUser(order, userId);
-
-      res.status(201).json({ message: 'Order placed and mock tests assigned', order });
-    } catch (err) {
-      res.status(400).json({ message: err.message });
-    }
-  },
-
-  placeOrderWithSelectedPackages: async (req, res) => {
-    try {
-      const userId = req.user.id;
-      let { packageIds } = req.body;
-      if (!Array.isArray(packageIds)) packageIds = [packageIds];
-
-      const order = await orderService.placeOrderWithSelectedPackages(userId, packageIds);
-
-      await assignMockTestsToUser(order, userId);
-
-      res.status(200).json({ message: 'Order placed and mock tests assigned', order });
-    } catch (err) {
-      res.status(400).json({ message: err.message });
-    }
+const getUserMockTests = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const mockTests = await UserMockTest.find({ userId });
+    res.status(200).json({ mockTests });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to fetch mock tests', error: err.message });
   }
 };
 
-module.exports = orderController;
+module.exports = { getUserMockTests }; // ✅ EXPORT AS OBJECT

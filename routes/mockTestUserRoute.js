@@ -1,7 +1,8 @@
 const express = require('express');
 const router = express.Router();
-const { getUserMockTests } = require('../controller/mockTestUserController');
-const { protect } = require('../middleware/authMiddleware');
-router.get('/my-mock-tests', protect, getUserMockTests);
+const { getUserMockTests } = require('../controller/mockTestUserController'); 
+const { verifyUserToken } = require('../middleware/userAuth');
+
+router.get('/my-mock-tests', verifyUserToken, getUserMockTests);
 
 module.exports = router;

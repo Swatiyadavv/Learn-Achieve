@@ -1,12 +1,8 @@
 const jwt = require('jsonwebtoken');
 const User = require('../model/userModel'); 
-
 exports.verifyUserToken = async (req, res, next) => {
   try {
-
-
-    
-    const authHeader = req.headers.authorization;
+        const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith('Bearer '))
       return res.status(401).json({ message: 'Token missing' });
 
@@ -15,7 +11,6 @@ exports.verifyUserToken = async (req, res, next) => {
 
     const user = await User.findById(decoded.id);
     if (!user) return res.status(404).json({ message: 'User not found' });
-po
     req.user = user; 
     next();
   } catch (err) {

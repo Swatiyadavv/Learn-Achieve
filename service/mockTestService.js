@@ -69,14 +69,12 @@ allDeleteMockTests: async (adminId) => {
 },
 searchMockTest: async (query) => {
   const trimmedQuery = query.trim();
-
   return await MockTest.find({
      mockTestName: { $regex: `^${trimmedQuery}`, $options: 'i' }// exact match, case-insensitive
   });
 },
 
-
-  getPaginatedPackages : async (limit, offset) => {
+getPaginatedPackages : async (limit, offset) => {
     const total = await MockTest.countDocuments();
     const packages = await MockTest.find()
       .skip(offset)
@@ -91,4 +89,4 @@ searchMockTest: async (query) => {
     };
   },
 }
-  module.exports = mockTestService;
+module.exports = mockTestService;

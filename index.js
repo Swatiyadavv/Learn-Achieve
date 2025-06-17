@@ -9,13 +9,13 @@ const userRoutes = require("./routes/userRoutes");
 const publicPackageRoutes = require('./routes/publicPackageRoutes');
 const cartRoutes = require('./routes/cartRoutes');
 const orderRoutes = require('./routes/orderRoutes');
-<<<<<<< HEAD
+ 
 const classMasterRoutes = require('./routes/classMasterRoutes');
 const blogRoutes = require('./routes/blogRoutes')
-=======
+
 const mockTestfetch = require('./routes/mockTestUserRoute')
 const subjectRoutes = require('./routes/subjectRoutes');
->>>>>>> cdbebc4dbdb1894e75269d313f52b4361dc06a80
+
 const cors = require('cors')
 dotenv.config();
 const app = express();
@@ -36,10 +36,10 @@ app.use('/api/order',orderRoutes);
 app.use('/api/cart', cartRoutes);
 app.use('/api/user', publicPackageRoutes); 
 app.use('/api/classMaster',classMasterRoutes)
-=======
+
 app.use('/api/mockTestfetch', mockTestfetch);
 app.use('/api/subject', subjectRoutes);
->>>>>>> cdbebc4dbdb1894e75269d313f52b4361dc06a80
+
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

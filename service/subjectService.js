@@ -31,18 +31,24 @@ const SubjectService = {
     await Subject.findByIdAndDelete(id);
   },
 
-  deleteMultipleSubjects: async (ids) => {
-    const subjects = await Subject.find({ _id: { $in: ids } });
-    for (const subject of subjects) {
-      if (subject.image) {
-        const imagePath = path.resolve(subject.image);
-        fs.unlink(imagePath, err => { if (err) console.error('Failed to delete image:', err); });
-      }
-    }
-    await Subject.deleteMany({ _id: { $in: ids } });
-  },
+ 
+  deleteAllByAdmin: async (adminId) => {
+  const subjects = await Subject.find({ createdBy: adminId });
 
-  getAllSubjects: async () => await Subject.find(),
+  for (const subject of subjects) {
+    if (subject.image) {
+      const imagePath = path.resolve(subject.image);
+      fs.unlink(imagePath, err => {
+        if (err) console.error('Failed to delete image:', err);
+      });
+    }
+  }
+    await Subject.deleteMany({ createdBy: adminId });
+},
+
+getAllSubjects: async (adminId) => {
+  return await Subject.find({ createdBy: adminId }).sort({ createdAt: -1 });
+},
 
   getPaginatedSubjects: async (limit, offset) => {
     const total = await Subject.countDocuments();

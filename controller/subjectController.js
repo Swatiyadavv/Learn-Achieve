@@ -34,27 +34,32 @@ const subjectController = {
     }
   },
 
-  deleteMultipleSubjects: async (req, res) => {
-    try {
-      const { ids } = req.body;
-      if (!Array.isArray(ids) || !ids.length) {
-        return res.status(400).json({ message: 'Invalid IDs' });
-      }
-      await subjectService.deleteMultipleSubjects(ids);
-      res.status(200).json({ message: 'Subjects deleted' });
-    } catch (err) {
-      res.status(500).json({ message: 'Delete failed', error: err.message });
-    }
-  },
-
+deleteAllSubjectsByAdmin: async (req, res) => {
+  try {
+    const adminId = req.admin.id; // from token
+    await subjectService.deleteAllByAdmin(adminId);
+    res.status(200).json({ message: 'All your subjects deleted successfully' });
+  } catch (err) {
+    res.status(500).json({ message: 'Delete failed', error: err.message });
+  }
+},
+  // getAllSubjects: async (req, res) => {
+  //   try {
+  //     const subjects = await subjectService.getAllSubjects();
+  //     res.status(200).json(subjects);
+  //   } catch (err) {
+  //     res.status(500).json({ message: 'Fetch failed', error: err.message });
+  //   }
+  // },
   getAllSubjects: async (req, res) => {
-    try {
-      const subjects = await subjectService.getAllSubjects();
-      res.status(200).json(subjects);
-    } catch (err) {
-      res.status(500).json({ message: 'Fetch failed', error: err.message });
-    }
-  },
+  try {
+    const adminId = req.admin.id;
+    const subjects = await subjectService.getAllSubjects(adminId);
+    res.status(200).json(subjects);
+  } catch (err) {
+    res.status(500).json({ message: 'Fetch failed', error: err.message });
+  }
+},
 
   getPaginatedSubjects: async (req, res) => {
     try {

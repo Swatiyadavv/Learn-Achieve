@@ -22,8 +22,12 @@ exports.verifyRegistration = async (req, res) => {
 
 exports.loginStep1 = async (req, res) => {
   try {
+    console.log("done");
+    
     const result = await userService.loginStep1(req.body);
     res.json(result);
+    console.log("done1");
+    
   } catch (e) {
     res.status(400).json({ message: e.message });
   }

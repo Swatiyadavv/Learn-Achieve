@@ -23,4 +23,8 @@ router.delete('/:id', protect, classMasterController.deleteClass);
 // Toggle active/inactive
 router.put('/toggle/:id', protect, classMasterController.toggleActive);
 
+//search
+router.get('/', protect, classMasterController.getActiveClasses);
+
+
 module.exports = router;

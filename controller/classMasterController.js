@@ -67,3 +67,18 @@ exports.toggleActive = async (req, res) => {
     res.status(500).json({ message: 'Error toggling class status', error: error.message });
   }
 };
+
+// Get all active classes with  search
+exports.getActiveClasses = async (req, res) => {
+  try {
+    const searchQuery = req.query.search || '';
+    const filter = {
+      class: { $regex: searchQuery, $options: 'i' } // case-insensitive partial match
+    };
+
+    const classes = await ClassMaster.find(filter);
+    res.status(200).json(classes);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching classes', error: error.message });
+  }
+};

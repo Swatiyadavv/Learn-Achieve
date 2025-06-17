@@ -26,5 +26,8 @@ router.put('/toggle/:id', protect, classMasterController.toggleActive);
 //search
 router.get('/', protect, classMasterController.getActiveClasses);
 
+// Get all active classes (with search and pagination)
+router.get('/', protect, classMasterController.getActiveClasses);
+
 
 module.exports = router;

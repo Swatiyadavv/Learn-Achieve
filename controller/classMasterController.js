@@ -82,3 +82,28 @@ exports.getActiveClasses = async (req, res) => {
     res.status(500).json({ message: 'Error fetching classes', error: error.message });
   }
 };
+exports.getActiveClasses = async (req, res) => {
+  try {
+    const offset = parseInt(req.query.offset) || 0;
+    const limit = parseInt(req.query.limit) || 10;
+
+    const filter = { isActive: true };
+
+    const classes = await ClassMaster.find(filter)
+      .skip(offset)
+      .limit(limit)
+      .sort({ createdAt: -1 });
+
+    const total = await ClassMaster.countDocuments(filter);
+
+    res.status(200).json({
+      total,
+      count: classes.length,
+      offset,
+      limit,
+      data: classes,
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching classes', error: error.message });
+  }
+};

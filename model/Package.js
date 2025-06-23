@@ -11,7 +11,7 @@ const packageSchema = new mongoose.Schema(
       type: String,
       required: true,
       trim: true,
-      enum: ['Class 6', 'Class 7', 'Class 8', 'Class 9', 'Class 10', 'Class 11', 'Class 12'], // Example options
+      enum: ['Class 6', 'Class 7', 'Class 8', 'Class 9', 'Class 10', 'Class 11', 'Class 12'], 
     },
     medium: {
       type: String,

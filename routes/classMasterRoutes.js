@@ -14,7 +14,7 @@ router.get('/',protect, classMasterController.getActiveClasses);
 // Get single class by ID
 router.get('/:id', protect, classMasterController.getClassById);
 
-// Update class by ID
+// Update class by ID;l
 router.put('/:id', protect, classMasterController.updateClass);
 
 // Delete class by ID

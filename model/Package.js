@@ -19,7 +19,7 @@ const packageSchema = new mongoose.Schema(
       enum: ['Hindi', 'English'],
     },
     mockTests: {
-      type: [String], // array of mock test names or IDs
+      type: [String], //IDs
       required: true,
       validate: v => Array.isArray(v) && v.length > 0,
     },

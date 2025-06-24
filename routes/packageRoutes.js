@@ -21,7 +21,6 @@ router.delete('/delete-multiple', verifyToken, packageController.deleteMultipleP
 router.get('/paginated', packageController.getPaginatedPackages);
 //get packages with paginated
 router.get('/paginated', verifyToken, packageController.getPaginatedPackages);
-// GET /api/package/paginated?limit=5&offset=0 -->route of paginated get api 
 
 
 // users

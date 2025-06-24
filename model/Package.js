@@ -11,7 +11,7 @@ const packageSchema = new mongoose.Schema(
       type: String,
       required: true,
       trim: true,
-      enum: ['Class 6', 'Class 7', 'Class 8', 'Class 9', 'Class 10', 'Class 11', 'Class 12'], // Example options
+      enum: ['Class 6', 'Class 7', 'Class 8', 'Class 9', 'Class 10', 'Class 11', 'Class 12'], 
     },
     medium: {
       type: String,
@@ -19,7 +19,7 @@ const packageSchema = new mongoose.Schema(
       enum: ['Hindi', 'English'],
     },
     mockTests: {
-      type: [String], // array of mock test names or IDs
+      type: [String], //IDs
       required: true,
       validate: v => Array.isArray(v) && v.length > 0,
     },

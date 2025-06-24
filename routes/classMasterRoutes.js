@@ -1,15 +1,19 @@
 const express = require('express');
 const router = express.Router();
-// const { authMiddleware, adminMiddleware } = require('../middleware/authMiddleware');
 const { protect } = require("../middleware/authMiddleware");
-
 const classMasterController = require('../controller/classMasterController');
 
 // Create class
 router.post('/', protect, classMasterController.createClass);
 
-// Get all active classes
-router.get('/',protect, classMasterController.getActiveClasses);
+// Get paginated active classes
+router.get('/', protect, classMasterController.getPaginatedActiveClasses);
+
+// Search active classes
+router.get('/active/search', protect, classMasterController.getActiveClassesWithSearch);
+
+// Get all classes (active + inactive) 
+router.get('/all', protect, classMasterController.getAllClasses);
 
 // Get single class by ID
 router.get('/:id', protect, classMasterController.getClassById);
@@ -22,5 +26,7 @@ router.delete('/:id', protect, classMasterController.deleteClass);
 
 // Toggle active/inactive
 router.put('/toggle/:id', protect, classMasterController.toggleActive);
+
+
 
 module.exports = router;

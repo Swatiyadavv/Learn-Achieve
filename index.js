@@ -36,6 +36,7 @@ app.use('/api/order',orderRoutes);
 app.use('/api/cart', cartRoutes);
 app.use('/api/user', publicPackageRoutes); 
 app.use('/api/classMaster',classMasterRoutes)
+app.use('/api/blog', blogRoutes); 
 
 app.use('/api/mockTestfetch', mockTestfetch);
 app.use('/api/subject', subjectRoutes);

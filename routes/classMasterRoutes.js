@@ -7,7 +7,6 @@ const classMasterController = require('../controller/classMasterController');
 // add and update with same routes
 router.post('/', protect, classMasterController.addOrUpdateClass);
 
-
 // Get all classes (active + inactive) with pagination + search
 router.get('/all', protect, classMasterController.getAllClasses);
 

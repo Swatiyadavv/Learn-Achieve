@@ -2,18 +2,23 @@ const express = require('express');
 const router = express.Router();
 const blogController = require('../controller/blogController');
 const upload = require('../middleware/uploadBlog');
-const { verifyToken } = require('../middleware/authMiddleware'); //  Token middleware import
+const { protect } = require('../middleware/authMiddleware');
 
 router.post(
   '/add',
-  verifyToken,
+  protect,
   upload.fields([
     { name: 'featuredImage', maxCount: 1 },
     { name: 'mainImage', maxCount: 1 }
   ]),
-  blogController.addBlog
+  blogController.addOrUpdateBlog
 );
 
-router.get('/', blogController.getBlogs);
+router.get('/',protect, blogController.getBlogs);
+
+router.delete('/delete', protect, blogController.deleteBlogHandler);
+
+
 
 module.exports = router;
+

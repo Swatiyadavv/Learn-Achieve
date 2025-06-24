@@ -4,15 +4,13 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { otp: generateOtp, sentOtp: sendOtpEmail } = require("../utils/otpUtils");
 const otpUtils = require("../utils/otpUtils");
-
+const {generateReferralCode} = require("../utils/referralUtils")
 
 const RESPONSE = require("../enums/responseMessageEnum");
 
 const JWT_SECRET = process.env.JWT_SECRET || "secret";
 
 const userService = {
-
-
 // Inside userService
 registerUser: async ({ email, password }) => {
   const existing = await User.findOne({ email });
@@ -36,6 +34,24 @@ registerUser: async ({ email, password }) => {
   };
 },
 
+// verifyRegistrationOtp: async (token, otp) => {
+//   const decoded = jwt.verify(token, JWT_SECRET);
+//   const email = decoded.email;
+
+//   const pending = await PendingUser.findOne({ email });
+//   if (!pending || pending.otp !== otp || pending.otpExpire < new Date())
+//     throw new Error(RESPONSE.OTP_INVALID);
+
+//   const user = await User.create({
+//     email,
+//     password: pending.password,
+//     isVerified: true,
+//   });
+
+//   await pending.deleteOne();
+//   return { message: RESPONSE.OTP_VERIFIED };
+// },`
+
 verifyRegistrationOtp: async (token, otp) => {
   const decoded = jwt.verify(token, JWT_SECRET);
   const email = decoded.email;
@@ -43,17 +59,20 @@ verifyRegistrationOtp: async (token, otp) => {
   const pending = await PendingUser.findOne({ email });
   if (!pending || pending.otp !== otp || pending.otpExpire < new Date())
     throw new Error(RESPONSE.OTP_INVALID);
-
+  const referralCode = generateReferralCode(email);
   const user = await User.create({
     email,
     password: pending.password,
     isVerified: true,
+    referralCode,
+    referredBy: pending.referredBy || null, // optional
   });
 
   await pending.deleteOne();
+
   return { message: RESPONSE.OTP_VERIFIED };
 },
-
+  
 
  loginStep1: async ({ email, password }) => {
   const user = await User.findOne({ email });

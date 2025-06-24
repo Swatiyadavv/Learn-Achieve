@@ -5,7 +5,7 @@ const { protect } = require("../middleware/authMiddleware");
 
 // Registration
 router.post("/register", controller.register);
-router.post("/verify-registration", protect, controller.verifyRegistration);
+router.post("/verify", protect, controller.verifyRegistration);
 
 // Login
 router.post("/login", controller.loginStep1);

@@ -14,7 +14,6 @@ const orderController = {
     try {
       const userId = req.user.id;
       let { packageIds } = req.body;
-
       if (!packageIds) {
         return res.status(400).json({ message: 'packageIds array is required' });
       }
@@ -43,8 +42,6 @@ const orderController = {
     res.status(404).json({ message: err.message });
   }
    }
-
-
 };
 
 module.exports = orderController;

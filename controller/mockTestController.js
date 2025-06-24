@@ -1,95 +1,94 @@
+const mongoose = require("mongoose");
 const mockTestService = require("../service/mockTestService");
-const mockTestController ={
-createandUpdate: async (req, res) => {
-  try {
-    const data = {
-      ...req.body,
-      medium: req.body.medium ? req.body.medium.split(",").map(s => s.trim()) : [],
-      class: req.body.class ? req.body.class.split(",").map(s => s.trim()) : [],
-      subjects: req.body.subjects ? req.body.subjects.split(",").map(s => s.trim()) : [],
-    };
+const { mockTestValidation } = require("../validation/mockTestValidation");
 
-    const id = req.params.id || null;
+const mockTestController = {
+  // Create or Update MockTest
+  createandUpdate: async (req, res) => {
+    try {
+      const { id } = req.params;
 
-    const result = await mockTestService.createandUpdate(data, req.admin.id, id);
+      const data = {
+        ...req.body,
+        medium: Array.isArray(req.body.medium)
+          ? req.body.medium
+          : (req.body.medium || "").split(",").map(s => s.trim()),
+        class: Array.isArray(req.body.class)
+          ? req.body.class
+          : (req.body.class || "").split(",").map(s => s.trim()),
+        subjects: Array.isArray(req.body.subjects)
+          ? req.body.subjects
+          : (req.body.subjects || "").split(",").map(s => s.trim()),
+      };
 
-    res.status(id ? 200 : 201).json(result);
-  } catch (err) {
-    res.status(400).json({ message: err.message });
-  }
-},
+      // Validation
+      const { error } = mockTestValidation.validate(data);
+      if (error) return res.status(400).json({ message: error.details[0].message });
 
+      // Validate ObjectId
+      const allIds = [...data.class, ...data.subjects];
+      for (const item of allIds) {
+        if (!mongoose.Types.ObjectId.isValid(item)) {
+          return res.status(400).json({ message: `Invalid ObjectId: ${item}` });
+        }
+      }
 
- getAllMockTests : async (req, res) => {
-  const tests = await mockTestService.getAllMockTests();
-  res.json(tests);
-},
-
- getMyMockTests : async (req, res) => {
-  const tests = await mockTestService.getMyMockTests(req.admin.id);
-  res.json(tests);
-},
-
- deleteMockTest : async (req, res) => {
-  try {
-    const result = await mockTestService.deleteMockTest(req.params.id, req.admin.id);
-    res.json(result);
-  } catch (err) {
-    res.status(400).json({ message: err.message });
-  }
-},
-allDeleteMockTest: async (req, res) => {
-  try {
-    const result = await mockTestService.allDeleteMockTests(req.admin.id);
-    res.json(result);
-  } catch (err) {
-    res.status(400).json({ message: err.message });
-  }
-},
- searchMockTest : async (req, res) => {
-  try {
-    const { query } = req.query;
-    if (!query) return res.status(400).json({ message: 'Search query missing' });
-
-    const results = await mockTestService.searchMockTest(query);
-    res.status(200).json(results);
-  } catch (error) {
-    res.status(500).json({ message: 'Error during search', error: error.message });
-  }
-},
-
-
-
- changeMockTestStatus : async (req, res) => {
-  try {
-    const { id } = req.params;
-    const { status } = req.body; 
-
-    const updatedTest = await mockTestService.updateMockTestStatus(id, req.admin.id, status);
-
-    res.json({ message: `Status updated to ${status}`, mockTest: updatedTest });
-  } catch (err) {
-    res.status(400).json({ message: err.message });
-  }
-},
-
-getPaginatedPackages : async (req, res) => {
-  try {
-    const { limit = 10, offset = 0 } = req.query;
-
-    const limitNum = parseInt(limit);
-    const offsetNum = parseInt(offset);
-
-    if (isNaN(limitNum) || isNaN(offsetNum)) {
-      return res.status(400).json({ message: 'Limit and offset must be valid numbers' });
+      const result = await mockTestService.createAndUpdate(data, id || null);
+      res.status(id ? 200 : 201).json({ message: id ? "Mock test updated" : "Mock test created", mockTest: result });
+    } catch (err) {
+      res.status(500).json({ message: "Server error", error: err.message });
     }
+  },
 
-    const paginatedData = await mockTestService.getPaginatedPackages(limitNum, offsetNum);
-    
-    res.status(200).json(paginatedData);
-  } catch (error) {
-    res.status(500).json({ message: 'Failed to fetch packages', error: error.message });
-  }
-},
-}
+  // Get all + search + pagination + get by ID (combined)
+  getPaginatedOrSingleMockTest: async (req, res) => {
+    try {
+      const { id, query = "", limit = 10, offset = 0 } = req.query;
+
+      if (id) {
+        const test = await mockTestService.getMockTestById(id);
+        return res.status(200).json(test);
+      }
+
+      const result = await mockTestService.getPaginatedMockTests(query, parseInt(limit), parseInt(offset));
+      res.status(200).json(result);
+    } catch (err) {
+      res.status(500).json({ message: "Failed to fetch", error: err.message });
+    }
+  },
+
+  // Change Status
+  changeMockTestStatus: async (req, res) => {
+    try {
+      const { id } = req.params;
+      const { status } = req.body;
+      const result = await mockTestService.updateMockTestStatus(id, status);
+      res.status(200).json({ message: `Status updated to ${status}`, mockTest: result });
+    } catch (err) {
+      res.status(400).json({ message: err.message });
+    }
+  },
+
+  // Smart Delete (single or multiple)
+  deleteMockTest: async (req, res) => {
+    try {
+      const { id, ids } = req.body;
+
+      if (id) {
+        const result = await mockTestService.deleteMockTest(id);
+        return res.status(200).json(result);
+      }
+
+      if (Array.isArray(ids) && ids.length > 0) {
+        const result = await mockTestService.deleteMultipleMockTests(ids);
+        return res.status(200).json(result);
+      }
+
+      return res.status(400).json({ message: "Provide either 'id' or 'ids[]' to delete" });
+    } catch (err) {
+      res.status(400).json({ message: err.message });
+    }
+  },
+};
+
 module.exports = mockTestController;

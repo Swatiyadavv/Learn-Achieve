@@ -2,57 +2,53 @@ const Subject = require('../model/subjectModel');
 const fs = require('fs');
 const path = require('path');
 
-const SubjectService = {
-  addOrUpdateSubject: async ({ id, name, subject, image, createdBy }) => {
+const subjectService = {
+  addOrUpdateSubject: async ({ id, subject, classId, color, image }) => {
     if (id) {
-      const subjectDoc = await Subject.findById(id);
-      if (!subjectDoc) throw new Error('Subject not found');
+      const existing = await Subject.findById(id);
+      if (!existing) throw new Error('Subject not found');
 
-      subjectDoc.name = name;
-      subjectDoc.subject = subject;
-      subjectDoc.image = image || subjectDoc.image;
+      const duplicate = await Subject.findOne({
+        _id: { $ne: id },
+        subject,
+        class: classId
+      });
+      if (duplicate) throw new Error('This subject already exists for the selected class');
 
-      await subjectDoc.save();
-      return subjectDoc;
+      existing.subject = subject;
+      existing.class = classId || existing.class;
+      existing.color = color || existing.color;
+      existing.image = image || existing.image;
+
+      await existing.save();
+      return existing;
     } else {
-      const newSubject = new Subject({ name, subject, image, createdBy });
+      const duplicate = await Subject.findOne({ subject, class: classId });
+      if (duplicate) throw new Error('This subject already exists for the selected class');
+
+      const newSubject = new Subject({
+        subject,
+        class: classId,
+        color,
+        image
+      });
       await newSubject.save();
       return newSubject;
     }
   },
 
-  deleteSubject: async (id) => {
-    const subject = await Subject.findById(id);
-    if (!subject) throw new Error('Subject not found');
-    if (subject.image) {
-      const imagePath = path.resolve(subject.image);
-      fs.unlink(imagePath, err => { if (err) console.error('Failed to delete image:', err); });
-    }
-    await Subject.findByIdAndDelete(id);
-  },
+  getFilteredSubjects: async (search, limit, offset) => {
+    const filter = search
+      ? { subject: { $regex: search.trim(), $options: 'i' } }
+      : {};
 
- 
-  deleteAllByAdmin: async (adminId) => {
-  const subjects = await Subject.find({ createdBy: adminId });
+    const total = await Subject.countDocuments(filter);
+    const subjects = await Subject.find(filter)
+      .skip(offset)
+      .limit(limit)
+      .populate('class')
+      .sort({ createdAt: -1 });
 
-  for (const subject of subjects) {
-    if (subject.image) {
-      const imagePath = path.resolve(subject.image);
-      fs.unlink(imagePath, err => {
-        if (err) console.error('Failed to delete image:', err);
-      });
-    }
-  }
-    await Subject.deleteMany({ createdBy: adminId });
-},
-
-getAllSubjects: async (adminId) => {
-  return await Subject.find({ createdBy: adminId }).sort({ createdAt: -1 });
-},
-
-  getPaginatedSubjects: async (limit, offset) => {
-    const total = await Subject.countDocuments();
-    const subjects = await Subject.find().skip(offset).limit(limit).sort({ createdAt: -1 });
     return {
       total,
       count: subjects.length,
@@ -62,22 +58,51 @@ getAllSubjects: async (adminId) => {
     };
   },
 
-  searchSubjects: async (query) => {
-    return await Subject.find({
-      subject: { $regex: `^${query.trim()}`, $options: 'i' }
-    });
+  deleteSubject: async (id) => {
+    const subject = await Subject.findById(id);
+    if (!subject) throw new Error('Subject not found');
+
+    if (subject.image) {
+      const imagePath = path.resolve(subject.image);
+      fs.unlink(imagePath, err => {
+        if (err) console.error('Image delete error:', err.message);
+      });
+    }
+
+    await Subject.findByIdAndDelete(id);
   },
 
-  updateMockTestStatus: async (id, adminId, status) => {
+  deleteMultiple: async (ids) => {
+    const subjects = await Subject.find({ _id: { $in: ids } });
+
+    for (const subject of subjects) {
+      if (subject.image) {
+        const imagePath = path.resolve(subject.image);
+        fs.unlink(imagePath, err => {
+          if (err) console.error('Failed to delete image:', err);
+        });
+      }
+    }
+
+    await Subject.deleteMany({ _id: { $in: ids } });
+  },
+
+  updateStatus: async (id, status) => {
     if (!['active', 'inactive'].includes(status)) throw new Error('Invalid status');
-    const subject = await Subject.findOneAndUpdate(
-      { _id: id, createdBy: adminId },
+
+    const updated = await Subject.findByIdAndUpdate(
+      id,
       { status },
       { new: true }
     );
-    if (!subject) throw new Error('Subject not found or unauthorized');
-    return subject;
+
+    if (!updated) throw new Error('Subject not found');
+    return updated;
+  },
+
+  getSubjectsByClass: async (classId) => {
+    return await Subject.find({ class: classId }).populate('class').sort({ createdAt: -1 });
   },
 };
 
-module.exports = SubjectService;
+module.exports = subjectService;

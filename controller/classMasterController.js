@@ -21,6 +21,8 @@ exports.getActiveClasses = async (req, res) => {
   }
 };
 
+
+
 // Get single class by ID
 exports.getClassById = async (req, res) => {
   try {
@@ -45,6 +47,7 @@ exports.updateClass = async (req, res) => {
 
 // Delete class
 exports.deleteClass = async (req, res) => {
+
   try {
     // console.log("Deleting class:", req.params.id);
     const deleted = await ClassMaster.findByIdAndDelete(req.params.id);

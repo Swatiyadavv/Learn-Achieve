@@ -19,7 +19,6 @@ exports.verifyRegistration = async (req, res) => {
   }
 };
 
-
 exports.loginStep1 = async (req, res) => {
   try {
     const result = await userService.loginStep1(req.body);
@@ -38,9 +37,6 @@ exports.verifyLogin = async (req, res) => {
     res.status(400).json({ message: e.message });
   }
 };
-
-
-
 
 
 exports.sendResetOtp = async (req, res) => {
@@ -70,8 +66,7 @@ exports.resetPassword = async (req, res) => {
     if (!newPassword) {
       return res.status(400).json({ message: "New password is required" });
     }
-
-    const result = await userService.resetPassword(token, newPassword);
+        const result = await userService.resetPassword(token, newPassword);
     res.json(result);
   } catch (e) {
     res.status(400).json({ message: e.message });

@@ -3,25 +3,20 @@ const router = express.Router();
 const subjectController = require('../controller/subjectController');
 const upload = require('../middleware/uploadMiddleware');
 const { protect } = require('../middleware/authMiddleware');
-// add or upadte
+
+// Add or update subject
 router.post('/add-or-update', protect, upload.single('image'), subjectController.addOrUpdateSubject);
 
-// delete data by id 
-router.delete('/delete/:id', protect, subjectController.deleteSubject);
+// Search + pagination + all
+router.get('/list', protect, subjectController.getSubjectList);
 
-// delete all
-router.delete('/delete-all', protect, subjectController.deleteAllSubjectsByAdmin);
+// Smart delete (single or multiple)
+router.delete('/delete', protect, subjectController.deleteSubjectSmart);
 
-// get all
-router.get('/get', protect, subjectController.getAllSubjects);
+// Change status
+router.put('/status/:id', protect, subjectController.changeStatus);
 
-//paginated
-router.get('/paginated', protect, subjectController.getPaginatedSubjects);
-
-// search
-router.get('/search', protect, subjectController.searchSubjects);
-
-//status  change 
-router.put('/status/:id', protect, subjectController.changeMockTestStatus);
+// Get subjects by class
+router.get('/class/:classId', protect, subjectController.getSubjectsByClass);
 
 module.exports = router;

@@ -1,12 +1,34 @@
 const Joi = require("joi");
+const mongoose = require("mongoose");
 
-const mockTestValidation = Joi.object({
-  mockTestName: Joi.string().min(3).max(100).required(),
-  medium: Joi.array().items(Joi.string()).min(1).required(),
-  class: Joi.array().items(Joi.string()).min(1).required(),
-  duration: Joi.number().min(1).max(300).required(),
-  subjects: Joi.array().items(Joi.string()).min(1).required(),
-  totalQuestions: Joi.number().min(1).max(500).required()
+exports.mockTestValidation = Joi.object({
+  mockTestName: Joi.string().required(),
+
+  medium: Joi.array()
+    .items(Joi.string().valid("Hindi", "English", "Semi-English", "Marathi"))
+    .required(),
+
+  class: Joi.array()
+    .items(Joi.string().custom((value, helpers) => {
+      if (!mongoose.Types.ObjectId.isValid(value)) {
+        return helpers.error("any.invalid");
+      }
+      return value;
+    }))
+    .required(),
+
+  duration: Joi.number().min(5).max(180).required(), //  Max 180 minutes
+
+  subjects: Joi.array()
+    .items(Joi.string().custom((value, helpers) => {
+      if (!mongoose.Types.ObjectId.isValid(value)) {
+        return helpers.error("any.invalid");
+      }
+      return value;
+    }))
+    .required(),
+
+  totalQuestions: Joi.number().min(1).max(100).required(), //  Max 100 questions
+
+  status: Joi.string().valid("active", "inactive")
 });
-
-module.exports = { mockTestValidation };

@@ -12,4 +12,4 @@ const getUserMockTests = async (req, res) => {
   }
 };
 
-module.exports = { getUserMockTests }; // ✅ EXPORT AS OBJECT
+module.exports = { getUserMockTests };

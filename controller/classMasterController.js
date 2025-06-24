@@ -113,7 +113,6 @@ exports.getActiveClassesWithSearch = async (req, res) => {
   }
 };
 
-// Get single class by ID
 exports.getClassById = async (req, res) => {
   try {
     const classData = await ClassMaster.findById(req.params.id);
@@ -149,6 +148,7 @@ exports.updateClass = async (req, res) => {
 
 // Delete single or multiple classes
 exports.deleteClass = async (req, res) => {
+
   try {
     let id = [];
 

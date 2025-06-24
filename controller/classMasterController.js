@@ -10,6 +10,7 @@ const formatClassEndDate = (classes) => {
 
 // Create class
 exports.createClass = async (req, res) => {
+  
   try {
     const { class: className, classEndDate, isActive } = req.body;
     const newClass = await ClassMaster.create({

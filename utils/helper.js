@@ -31,3 +31,5 @@ const sentOtp = async (email, otp) => {
   }
 };
 module.exports = { otp, sentOtp };
+
+

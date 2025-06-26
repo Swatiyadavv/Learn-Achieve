@@ -189,3 +189,43 @@ exports.toggleActive = async (req, res) => {
     res.status(500).json({ message: 'Error toggling class status', error: error.message });
   }
 };
+exports.addOrUpdateClass = async (req, res) => {
+  try {
+    const { id, class: className, classEndDate, isActive } = req.body;
+
+    if (id) {
+      // Update existing class
+      const updated = await ClassMaster.findByIdAndUpdate(
+        id,
+        { class: className, classEndDate, isActive },
+        { new: true }
+      );
+
+      if (!updated) return res.status(404).json({ message: 'Class not found' });
+
+      const formatted = {
+        ...updated._doc,
+        classEndDate: updated.classEndDate.toISOString().split('T')[0]
+      };
+
+      return res.status(200).json({ message: 'Class updated', data: formatted });
+    } else {
+      // Create new class
+      const newClass = await ClassMaster.create({
+        class: className,
+        classEndDate,
+        isActive: isActive !== undefined ? isActive : true
+      });
+
+      const formatted = {
+        ...newClass._doc,
+        classEndDate: newClass.classEndDate.toISOString().split('T')[0]
+      };
+
+      return res.status(201).json({ message: 'Class created successfully', data: formatted });
+    }
+
+  } catch (error) {
+    res.status(500).json({ message: 'Error saving class', error: error.message });
+  }
+};

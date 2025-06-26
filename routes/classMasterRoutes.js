@@ -12,6 +12,15 @@ router.get('/active', protect, classMasterController.getPaginatedActiveClasses);
 router.get('/:id', protect, classMasterController.getClassById);
 // Update class by ID
 router.put('/:id', protect, classMasterController.updateClass);
+
+
+// add and update with same routes
+router.post('/', protect, classMasterController.addOrUpdateClass);
+
+
+// Get all classes (active + inactive) with pagination + search
+router.get('/all', protect, classMasterController.getAllClasses);
+
 // DELETE single and multiple classes by IDs
 router.delete('/', protect, classMasterController.deleteClass);
 // Toggle active/inactive

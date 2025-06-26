@@ -5,7 +5,7 @@ const upload = require('../middleware/uploadMiddleware');
 const { protect } = require('../middleware/authMiddleware');
 
 // Add or update subject
-router.post('/add-or-update', protect, upload.single('image'), subjectController.addOrUpdateSubject);
+router.post('/add', protect, upload.single('image'), subjectController.addOrUpdateSubject);
 
 // Search + pagination + all
 router.get('/list', protect, subjectController.getSubjectList);

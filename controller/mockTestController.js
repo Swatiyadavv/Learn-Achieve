@@ -55,16 +55,24 @@ const mockTestController = {
   },
 
   // Change Status
-  changeMockTestStatus: async (req, res) => {
-    try {
-      const { id } = req.params;
-      const { status } = req.body;
-      const result = await mockTestService.updateMockTestStatus(id, status);
-      res.status(200).json({ message: `Status updated to ${status}`, mockTest: result });
-    } catch (err) {
-      res.status(400).json({ message: err.message });
+ changeMockTestStatus: async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+
+    const mock = await mockTestService.getMockTestById(id);
+    if (!mock) return res.status(404).json({ message: "Mock test not found" });
+
+    if (mock.status === status) {
+      return res.status(400).json({ message: `Mock test is already ${status}` });
     }
-  },
+
+    const result = await mockTestService.updateMockTestStatus(id, status);
+    res.status(200).json({ message: `Status updated to ${status}`, mockTest: result });
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+},
 
   // Smart Delete (single or multiple)
   deleteMockTest: async (req, res) => {

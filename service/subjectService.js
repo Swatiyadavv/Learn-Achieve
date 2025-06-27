@@ -86,19 +86,23 @@ const subjectService = {
 
     await Subject.deleteMany({ _id: { $in: ids } });
   },
+updateStatus: async (id, status) => {
+  if (!['active', 'inactive'].includes(status)) {
+    throw new Error('Invalid status');
+  }
 
-  updateStatus: async (id, status) => {
-    if (!['active', 'inactive'].includes(status)) throw new Error('Invalid status');
+  const subject = await Subject.findById(id);
+  if (!subject) throw new Error('Subject not found');
 
-    const updated = await Subject.findByIdAndUpdate(
-      id,
-      { status },
-      { new: true }
-    );
+  if (subject.status === status) {
+    throw new Error(`Subject is already ${status}`);
+  }
 
-    if (!updated) throw new Error('Subject not found');
-    return updated;
-  },
+  subject.status = status;
+  await subject.save();
+
+  return subject;
+},
 
   getSubjectsByClass: async (classId) => {
     return await Subject.find({ class: classId }).populate('class').sort({ createdAt: -1 });

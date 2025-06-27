@@ -3,7 +3,7 @@ const Subject = require("../model/subjectModel");
 const ClassMaster = require("../model/classMasterModel");
 const mongoose = require("mongoose");
 const { mockTestValidation } = require("../validation/mockTestValidation");
-
+const Package = require('../model/Package')
 const mockTestService = {
   // Create or Update
   createAndUpdate: async (data, id = null) => {
@@ -72,30 +72,38 @@ const mockTestService = {
   }
 },
 
-  // Combined: Get all + Search + Pagination
-  getPaginatedMockTests: async (query, limit, offset) => {
-    const filter = query
-      ? { mockTestName: { $regex: query.trim(), $options: "i" } }
-      : {};
+ getPaginatedMockTests: async (query, limit, offset) => {
+  const filter = query
+    ? { mockTestName: { $regex: query.trim(), $options: "i" } }
+    : {};
 
-    const total = await MockTest.countDocuments(filter);
+  const total = await MockTest.countDocuments(filter);
 
-    const data = await MockTest.find(filter)
-      .skip(offset)
-      .limit(limit)
-      .sort({ createdAt: -1 })
-      .populate("class", "class")
-      .populate("subjects", "subject");
+  const rawData = await MockTest.find(filter)
+    .skip(offset)
+    .limit(limit)
+    .sort({ createdAt: -1 })
+    .populate("class", "class")
+    .populate("subjects", "subject");
 
-      
-    return {
-      total,
-      count: data.length,
-      mockTests: data,
-      nextOffset: offset + limit < total ? offset + limit : null,
-      prevOffset: offset - limit >= 0 ? offset - limit : null,
-    };
-  },
+  const data = await Promise.all(
+    rawData.map(async (mockTest) => {
+      const count = await Package.countDocuments({ mockTests: mockTest._id });
+      return {
+        ...mockTest.toObject(),
+        packageCount: count, // ← number of packages this mock test belongs to
+      };
+    })
+  );
+
+  return {
+    total,
+    count: data.length,
+    mockTests: data,
+    nextOffset: offset + limit < total ? offset + limit : null,
+    prevOffset: offset - limit >= 0 ? offset - limit : null,
+  };
+},
 
   // Get by ID
   getMockTestById: async (id) => {
@@ -112,16 +120,23 @@ const mockTestService = {
   },
 
   // Status change
-  updateMockTestStatus: async (id, status) => {
-    if (!["active", "inactive"].includes(status)) {
-      throw new Error("Invalid status");
-    }
+updateMockTestStatus: async (id, newStatus) => {
+  if (!["active", "inactive"].includes(newStatus)) {
+    throw new Error("Invalid status");
+  }
 
-    const updated = await MockTest.findByIdAndUpdate(id, { status }, { new: true });
-    if (!updated) throw new Error("Mock test not found");
+  const mock = await MockTest.findById(id);
+  if (!mock) throw new Error("Mock test not found");
 
-    return updated;
-  },
+  if (mock.status === newStatus) {
+    throw new Error(`Mock test is already ${newStatus}`);
+  }
+
+  mock.status = newStatus;
+  await mock.save();
+
+  return mock;
+},
 
   // Smart Delete
   deleteMockTest: async (id) => {

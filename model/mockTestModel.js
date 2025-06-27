@@ -25,7 +25,7 @@ const mockTestSchema = new mongoose.Schema({
   duration: {
     type: Number,
     required: [true, "Duration is required"],
-    min: [1, "Duration must be at least 1 minute"]
+    min: [30, "Duration must be at least 1 minute"]
   },
 
   subjects: {
@@ -37,13 +37,13 @@ const mockTestSchema = new mongoose.Schema({
   totalQuestions: {
     type: Number,
     required: [true, "Total number of questions is required"],
-    min: [1, "Total questions must be greater than 0"]
+    min: [15, "Total questions must be greater than 0"]
   },
 
   status: {
     type: String,
     enum: ["active", "inactive"],
-    default: "inactive"
+    default: "active"
   }
 }, { timestamps: true });
 

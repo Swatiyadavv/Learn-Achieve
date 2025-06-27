@@ -47,12 +47,27 @@ const packageService = {
   await Package.findByIdAndDelete(id);
 },
 
- getAllPackages : async () => {
-  return await Package.find();
+//  getAllPackages : async () => {
+//   return await Package.find();
+// },
+
+getAllPackages : async () => {
+  const packages = await Package.find({ isActive: true }); //  only active packages
+
+  const data = packages.map(pkg => {
+    const availableMockTests = Array.isArray(pkg.mockTests) ? pkg.mockTests.length : 0;
+
+    return {
+      ...pkg.toObject(),
+      availableMockTests, // count of associated mock tests
+    };
+  });
+
+  return data;
 },
 
 
- updatePackage : async (id, updatedData, file) => {
+updatePackage : async (id, updatedData, file) => {
   const pkg = await Package.findById(id);
   if (!pkg) throw new Error('Package not found');
 

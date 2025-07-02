@@ -2,7 +2,8 @@ const express = require('express');
 const router = express.Router();
 const packageController = require('../controller/packageController');
 const upload = require('../middleware/uploadMiddleware');
-const { verifyToken } = require('../middleware/authMiddleware'); //  Token middleware import
+const { verifyToken } = require('../middleware/authMiddleware'); 
+
 //  Add package (protected + image upload)
 router.post('/add', verifyToken, upload.single('image'), packageController.addPackage);
 //  Delete package by ID (protected)
@@ -19,3 +20,4 @@ router.get('/paginated', verifyToken, packageController.getPaginatedPackages);
 // users 
 router.get('/packages', packageController.getAllPackages);
 module.exports = router;   
+

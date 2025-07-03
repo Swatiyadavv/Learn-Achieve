@@ -90,3 +90,55 @@ exports.getFilteredQuestionBank = async (query) => {
     prevOffset: offset - limit >= 0 ? Number(offset) - Number(limit) : null,
   };
 };
+
+
+
+exports.updateStatus =async (id, status) => {
+  if (!['active', 'inactive'].includes(status)) {
+    throw new Error('Invalid status');
+  }
+
+  const question = await QuestionBank.findById(id);
+  if (!question) throw new Error('question not found');
+
+  if (question.status === status) {
+    throw new Error(`question is already ${status}`);
+  }
+
+  question.status = status;
+  await question.save();
+
+  return question;
+};
+
+
+
+
+exports.deleteSubject= async (id) => {
+    const question = await QuestionBank.findById(id);
+    if (!question) throw new Error('question not found');
+
+    if (question.image) {
+      const imagePath = path.resolve(question.image);
+      fs.unlink(imagePath, err => {
+        if (err) console.error('Image delete error:', err.message);
+      });
+    }
+
+    await QuestionBank.findByIdAndDelete(id);
+  };
+
+  exports.deleteMultiple= async (ids) => {
+    const questions = await QuestionBank.find({ _id: { $in: ids } });
+
+    for (const question of questions) {
+      if (question.image) {
+        const imagePath = path.resolve(question.image);
+        fs.unlink(imagePath, err => {
+          if (err) console.error('Failed to delete image:', err);
+        });
+      }
+    }
+
+    await QuestionBank.deleteMany({ _id: { $in: ids } });
+  };

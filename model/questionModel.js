@@ -8,6 +8,7 @@ const questionBankSchema = new mongoose.Schema({
     enum: ["Hindi", "English", "Semi-English", "Marathi"],
     required: true,
   },
+    status: { type: String, enum: ['active', 'inactive'], default: 'active' },
   module: { type: String, required: true },
   topicName: { type: String, required: true },
   typeOfQuestion: {

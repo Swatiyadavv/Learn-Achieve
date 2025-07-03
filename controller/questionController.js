@@ -12,3 +12,13 @@ exports.addOrUpdateQuestionBank = async (req, res) => {
     res.status(400).json({ success: false, message: error.message });
   }
 };
+
+
+exports.getFilteredQuestionBank = async (req, res) => {
+  try {
+    const result = await questionBankService.getFilteredQuestionBank(req.query);
+    res.status(200).json({ success: true, ...result });
+  } catch (err) {
+    res.status(500).json({ success: false, message: err.message });
+  }
+};

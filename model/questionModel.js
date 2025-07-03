@@ -1,9 +1,8 @@
 const mongoose = require("mongoose");
 
 const questionBankSchema = new mongoose.Schema({
-  classId: { type: mongoose.Schema.Types.ObjectId, ref: "Class", required: true },
+  classId: { type: mongoose.Schema.Types.ObjectId, ref: "ClassMaster", required: true },
   subjectId: { type: mongoose.Schema.Types.ObjectId, ref: "Subject", required: true },
-
   medium: {
     type: String,
     enum: ["Hindi", "English", "Semi-English", "Marathi"],
@@ -11,7 +10,6 @@ const questionBankSchema = new mongoose.Schema({
   },
   module: { type: String, required: true },
   topicName: { type: String, required: true },
-
   typeOfQuestion: {
     type: String,
     enum: ["General", "Comprehensive", "Poem"],
@@ -26,7 +24,7 @@ const questionBankSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Duplicate combination restriction
+// Prevent duplicate
 questionBankSchema.index(
   {
     classId: 1,
@@ -35,7 +33,7 @@ questionBankSchema.index(
     module: 1,
     topicName: 1,
     typeOfQuestion: 1,
-    questionType: 1
+    questionType: 1,
   },
   { unique: true }
 );

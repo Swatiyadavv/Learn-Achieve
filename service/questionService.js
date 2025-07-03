@@ -1,5 +1,6 @@
 const QuestionBank = require("../model/questionModel");
-
+require("../model/classMasterModel");
+require("../model/subjectModel");
 exports.createOrUpdateQuestionBank = async (data) => {
   const {
     id,
@@ -45,4 +46,47 @@ exports.createOrUpdateQuestionBank = async (data) => {
       questionType,
     });
   }
+};
+
+exports.getFilteredQuestionBank = async (query) => {
+  const {
+    classId,
+    subjectId,
+    medium,
+    typeOfQuestion,
+    questionType,
+    search,
+    limit = 10,
+    offset = 0,
+  } = query;
+
+  const filter = {};
+
+  if (classId) filter.classId = classId;
+  if (subjectId) filter.subjectId = subjectId;
+  if (medium) filter.medium = medium;
+  if (typeOfQuestion) filter.typeOfQuestion = typeOfQuestion;
+  if (questionType) filter.questionType = questionType;
+
+  if (search) {
+    const regex = { $regex: search.trim(), $options: 'i' };
+    filter.$or = [{ module: regex }, { topicName: regex }];
+  }
+
+  const total = await QuestionBank.countDocuments(filter);
+
+  const questions = await QuestionBank.find(filter)
+    .populate("classId")
+    .populate("subjectId")
+    .sort({ createdAt: -1 })
+    .skip(Number(offset))
+    .limit(Number(limit));
+
+  return {
+    total,
+    count: questions.length,
+    questions,
+    nextOffset: offset + limit < total ? Number(offset) + Number(limit) : null,
+    prevOffset: offset - limit >= 0 ? Number(offset) - Number(limit) : null,
+  };
 };

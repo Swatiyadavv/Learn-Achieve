@@ -9,13 +9,11 @@ const userRoutes = require("./routes/userRoutes");
 const publicPackageRoutes = require('./routes/publicPackageRoutes');
 const cartRoutes = require('./routes/cartRoutes');
 const orderRoutes = require('./routes/orderRoutes');
- 
 const classMasterRoutes = require('./routes/classMasterRoutes');
 const blogRoutes = require('./routes/blogRoutes')
-
 const mockTestfetch = require('./routes/mockTestUserRoute')
 const subjectRoutes = require('./routes/subjectRoutes');
-
+const questionRoutes = require('./routes/questionRoute')
 const cors = require('cors')
 dotenv.config();
 const app = express();
@@ -37,7 +35,7 @@ app.use('/api/cart', cartRoutes);
 app.use('/api/user', publicPackageRoutes); 
 app.use('/api/classMaster',classMasterRoutes)
 app.use('/api/blog', blogRoutes); 
-
+app.use('/api/question',questionRoutes);
 app.use('/api/mockTestfetch', mockTestfetch);
 app.use('/api/subject', subjectRoutes);
 

@@ -1,12 +1,10 @@
 const mongoose = require("mongoose");
-
 const mockTestSchema = new mongoose.Schema({
   mockTestName: {
     type: String,
     required: [true, "Mock Test name is required"],
     trim: true
   },
-
   medium: {
     type: [String],
     required: [true, "At least one medium is required"],
@@ -15,26 +13,22 @@ const mockTestSchema = new mongoose.Schema({
       message: "Invalid medium option"
     }
   },
-
   class: {
     type: [mongoose.Schema.Types.ObjectId],
     ref: "ClassMaster",
     required: [true, "At least one class is required"]
   },
-
   duration: {
     type: Number,
     required: [true, "Duration is required"],
     min: [30, "Duration must be at least 1 minute"]
   },
-
-  subjects: {
+ subjects: {
     type: [mongoose.Schema.Types.ObjectId],
     ref: "Subject",
     required: [true, "At least one subject is required"]
   },
-
-  totalQuestions: {
+ totalQuestions: {
     type: Number,
     required: [true, "Total number of questions is required"],
     min: [15, "Total questions must be greater than 0"]
@@ -46,6 +40,5 @@ const mockTestSchema = new mongoose.Schema({
     default: "active"
   }
 }, { timestamps: true });
-
 const MockTest = mongoose.model("MockTest", mockTestSchema);
 module.exports = MockTest;

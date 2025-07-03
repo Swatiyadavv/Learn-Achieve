@@ -1,5 +1,4 @@
 const ClassMaster = require('../model/classMasterModel');
-
 // Helper function to format classEndDate
 const formatClassEndDate = (classes) => {
   return classes.map(cls => ({
@@ -10,7 +9,6 @@ const formatClassEndDate = (classes) => {
 
 // Create class
 exports.createClass = async (req, res) => {
-  
   try {
     const { class: className, classEndDate, isActive } = req.body;
     const newClass = await ClassMaster.create({
@@ -18,12 +16,10 @@ exports.createClass = async (req, res) => {
       classEndDate,
       isActive: isActive !== undefined ? isActive : true
     });
-
     const formatted = {
       ...newClass._doc,
       classEndDate: newClass.classEndDate.toISOString().split('T')[0]
     };
-
     res.status(201).json({ message: 'Class created successfully', data: formatted });
   } catch (error) {
     res.status(500).json({ message: 'Error creating class', error: error.message });
@@ -36,21 +32,17 @@ exports.getPaginatedActiveClasses = async (req, res) => {
     const offset = parseInt(req.query.offset) || 0;
     const limit = parseInt(req.query.limit) || 10;
     const search = req.query.search || '';
-
     const filter = {
       isActive: true,
       class: { $regex: search, $options: 'i' }
     };
-
     const classes = await ClassMaster.find(filter)
       .skip(offset)
       .limit(limit)
       .sort({ createdAt: -1 });
 
     const total = await ClassMaster.countDocuments(filter);
-
     const formatted = formatClassEndDate(classes);
-
     res.status(200).json({
       total,
       count: classes.length,
@@ -183,7 +175,6 @@ exports.toggleActive = async (req, res) => {
 
     classData.isActive = !classData.isActive;
     await classData.save();
-
     res.status(200).json({ message: `Class is now ${classData.isActive ? 'Active' : 'Inactive'}` });
   } catch (error) {
     res.status(500).json({ message: 'Error toggling class status', error: error.message });
@@ -221,10 +212,8 @@ exports.addOrUpdateClass = async (req, res) => {
         ...newClass._doc,
         classEndDate: newClass.classEndDate.toISOString().split('T')[0]
       };
-
-      return res.status(201).json({ message: 'Class created successfully', data: formatted });
+   return res.status(201).json({ message: 'Class created successfully', data: formatted });
     }
-
   } catch (error) {
     res.status(500).json({ message: 'Error saving class', error: error.message });
   }

@@ -1,5 +1,6 @@
 const ClassMaster = require('../model/classMasterModel');
 // Helper function to format classEndDate
+
 const formatClassEndDate = (classes) => {
   return classes.map(cls => ({
     ...cls._doc,
@@ -7,10 +8,21 @@ const formatClassEndDate = (classes) => {
   }));
 };
 
-// Create class
+
+const parseDateString = (dateString) => {
+  if (typeof dateString === 'string' && dateString.includes('/')) {
+    const [day, month, year] = dateString.split('/');
+    return new Date(`${year}-${month}-${day}`);
+  }
+  return dateString;
+};
+
+
 exports.createClass = async (req, res) => {
   try {
-    const { class: className, classEndDate, isActive } = req.body;
+    const { class: className, isActive } = req.body;
+    const classEndDate = parseDateString(req.body.classEndDate);
+
     const newClass = await ClassMaster.create({
       class: className,
       classEndDate,
@@ -26,7 +38,7 @@ exports.createClass = async (req, res) => {
   }
 };
 
-// Get all active classes with pagination
+
 exports.getPaginatedActiveClasses = async (req, res) => {
   try {
     const offset = parseInt(req.query.offset) || 0;
@@ -55,7 +67,7 @@ exports.getPaginatedActiveClasses = async (req, res) => {
   }
 };
 
-// Get all classes (active + inactive) with pagination + search
+// Get all classes (active + inactive)
 exports.getAllClasses = async (req, res) => {
   try {
     const offset = parseInt(req.query.offset) || 0;
@@ -72,7 +84,6 @@ exports.getAllClasses = async (req, res) => {
       .sort({ createdAt: -1 });
 
     const total = await ClassMaster.countDocuments(filter);
-
     const formatted = formatClassEndDate(classes);
 
     res.status(200).json({
@@ -87,7 +98,7 @@ exports.getAllClasses = async (req, res) => {
   }
 };
 
-// Get all active classes with search query (no pagination)
+// Get all active classes with search (no pagination)
 exports.getActiveClassesWithSearch = async (req, res) => {
   try {
     const searchQuery = req.query.search || '';
@@ -97,7 +108,6 @@ exports.getActiveClassesWithSearch = async (req, res) => {
     };
 
     const classes = await ClassMaster.find(filter).sort({ createdAt: -1 });
-
     const formatted = formatClassEndDate(classes);
 
     res.status(200).json(formatted);
@@ -106,6 +116,7 @@ exports.getActiveClassesWithSearch = async (req, res) => {
   }
 };
 
+// Get class by ID
 exports.getClassById = async (req, res) => {
   try {
     const classData = await ClassMaster.findById(req.params.id);
@@ -139,9 +150,8 @@ exports.updateClass = async (req, res) => {
   }
 };
 
-// Delete single or multiple classes
+// Delete single/multiple classes
 exports.deleteClass = async (req, res) => {
-
   try {
     let id = [];
 
@@ -180,12 +190,15 @@ exports.toggleActive = async (req, res) => {
     res.status(500).json({ message: 'Error toggling class status', error: error.message });
   }
 };
+
+//  Add or Update class
 exports.addOrUpdateClass = async (req, res) => {
   try {
-    const { id, class: className, classEndDate, isActive } = req.body;
+    const { id, class: className, isActive } = req.body;
+    const classEndDate = parseDateString(req.body.classEndDate);
 
     if (id) {
-      // Update existing class
+      // Update
       const updated = await ClassMaster.findByIdAndUpdate(
         id,
         { class: className, classEndDate, isActive },
@@ -201,7 +214,7 @@ exports.addOrUpdateClass = async (req, res) => {
 
       return res.status(200).json({ message: 'Class updated', data: formatted });
     } else {
-      // Create new class
+      // Create
       const newClass = await ClassMaster.create({
         class: className,
         classEndDate,

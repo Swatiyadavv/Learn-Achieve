@@ -23,20 +23,29 @@ exports.createClass = async (req, res) => {
     const { class: className, isActive } = req.body;
     const classEndDate = parseDateString(req.body.classEndDate);
 
+    // Check if class with same name exists
+    const existingClass = await ClassMaster.findOne({ class: className });
+    if (existingClass) {
+      return res.status(400).json({ message: 'Class already exists' });
+    }
+
     const newClass = await ClassMaster.create({
       class: className,
       classEndDate,
       isActive: isActive !== undefined ? isActive : true
     });
+
     const formatted = {
       ...newClass._doc,
       classEndDate: newClass.classEndDate.toISOString().split('T')[0]
     };
     res.status(201).json({ message: 'Class created successfully', data: formatted });
+
   } catch (error) {
     res.status(500).json({ message: 'Error creating class', error: error.message });
   }
 };
+
 
 
 exports.getPaginatedActiveClasses = async (req, res) => {
@@ -199,6 +208,11 @@ exports.addOrUpdateClass = async (req, res) => {
 
     if (id) {
       // Update
+      const existingClass = await ClassMaster.findOne({ class: className, _id: { $ne: id } });
+      if (existingClass) {
+        return res.status(400).json({ message: 'Another class with the same name already exists' });
+      }
+
       const updated = await ClassMaster.findByIdAndUpdate(
         id,
         { class: className, classEndDate, isActive },
@@ -215,6 +229,11 @@ exports.addOrUpdateClass = async (req, res) => {
       return res.status(200).json({ message: 'Class updated', data: formatted });
     } else {
       // Create
+      const existingClass = await ClassMaster.findOne({ class: className });
+      if (existingClass) {
+        return res.status(400).json({ message: 'Class already exists' });
+      }
+
       const newClass = await ClassMaster.create({
         class: className,
         classEndDate,
@@ -225,7 +244,8 @@ exports.addOrUpdateClass = async (req, res) => {
         ...newClass._doc,
         classEndDate: newClass.classEndDate.toISOString().split('T')[0]
       };
-   return res.status(201).json({ message: 'Class created successfully', data: formatted });
+
+      return res.status(201).json({ message: 'Class created successfully', data: formatted });
     }
   } catch (error) {
     res.status(500).json({ message: 'Error saving class', error: error.message });

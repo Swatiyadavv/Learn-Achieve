@@ -6,6 +6,7 @@ const packageSchema = new mongoose.Schema(
       type: String,
       required: true,
       trim: true,
+      unique: true,
     },
     className: {
       type: String,
@@ -18,20 +19,23 @@ const packageSchema = new mongoose.Schema(
       required: true,
       enum: ['Hindi', 'English'],
     },
-    mockTests: {
-      type: [String], //IDs
-      required: true,
-      validate: v => Array.isArray(v) && v.length > 0,
-    },
-    numberOfAttempts: {
-      type: Number,
-      required: true,
-      min: 1,
-    },
+  mockTests: {
+  type: [String], 
+  enum: ['Maths', 'Science', 'English', 'History', 'Geography'], 
+  required: true,
+},
+
+   numberOfAttempts: {
+  type: Number,
+  required: true,
+  min: [1, 'At least 1 attempt is required'],
+  max: [3, 'Number of attempts cannot exceed 3'],
+},
+
     platform: {
       type: String,
       required: true,
-      enum: ['Bharat-Sat', 'ExamYa', 'Pradnya', 'Learntic'],
+      enum: ['Bharat-Sat', 'ExamYa'],
     },
     actualPrice: {
       type: Number,
@@ -54,7 +58,7 @@ const packageSchema = new mongoose.Schema(
     },
     image: {
       type: String,
-      trim: true,
+      default: '',
     },
       isActive: {
      type: Boolean, 

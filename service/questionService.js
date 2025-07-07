@@ -2,8 +2,7 @@ const QuestionBank = require("../model/questionModel");
 require("../model/classMasterModel");
 require("../model/subjectModel");
 const SubQuestion = require("../model/subQuestionModel")
-const QuestionBank = require("../model/questionModel");
-const SubQuestion = require("../model/subQuestionModel");
+
 
 //  Create or Update Main Question
 exports.createOrUpdateQuestionBank = async (data) => {

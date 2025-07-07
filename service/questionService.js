@@ -2,10 +2,11 @@ const QuestionBank = require("../model/questionModel");
 require("../model/classMasterModel");
 require("../model/subjectModel");
 const SubQuestion = require("../model/subQuestionModel")
+
 // const QuestionBank = require("../model/questionModel");
 // const SubQuestion = require("../model/subQuestionModel");
 
-//  Create or Update Main Question
+
 exports.createOrUpdateQuestionBank = async (data) => {
   const {
     id,
@@ -15,33 +16,29 @@ exports.createOrUpdateQuestionBank = async (data) => {
     module,
     topicName,
     typeOfQuestion,
-    questionType
+    questionType,
   } = data;
 
-  //  Trim inputs
   const cleanModule = module.trim();
   const cleanTopic = topicName.trim();
 
   if (id) {
-    //  Update
-    const updated = await QuestionBank.findByIdAndUpdate(
-      id,
-      {
-        classId,
-        subjectId,
-        medium,
-        module: cleanModule,
-        topicName: cleanTopic,
-        typeOfQuestion,
-        questionType,
-      },
-      { new: true }
-    );
-
+    // Update flow
+    const updated = await QuestionBank.findById(id);
     if (!updated) throw new Error("Question not found");
+
+    updated.classId = classId;
+    updated.subjectId = subjectId;
+    updated.medium = medium;
+    updated.module = cleanModule;
+    updated.topicName = cleanTopic;
+    updated.typeOfQuestion = typeOfQuestion;
+    updated.questionType = questionType;
+
+    await updated.save(); //  Explicit save
     return updated;
   } else {
-    //  Duplicate check before creating
+    // Duplicate check
     const exists = await QuestionBank.findOne({
       classId,
       subjectId,
@@ -56,8 +53,8 @@ exports.createOrUpdateQuestionBank = async (data) => {
       throw new Error("This Question Bank entry already exists.");
     }
 
-    //  Create new
-    return await QuestionBank.create({
+    // Create new + save
+    const question = new QuestionBank({
       classId,
       subjectId,
       medium,
@@ -66,8 +63,12 @@ exports.createOrUpdateQuestionBank = async (data) => {
       typeOfQuestion,
       questionType,
     });
+
+    await question.save(); // 
+    return question;
   }
 };
+
 exports.addSubQuestion = async (data) => {
   const { parentId, questionText, options, correctAnswer } = data;
 
@@ -75,7 +76,7 @@ exports.addSubQuestion = async (data) => {
   const trimmedOptions = options.map(opt => opt.trim());
   const trimmedAnswer = correctAnswer.trim();
 
-  //  Check duplicate subquestion under same parent
+  // Duplicate check
   const duplicate = await SubQuestion.findOne({
     parentId,
     questionText: trimmedQuestion,
@@ -85,13 +86,17 @@ exports.addSubQuestion = async (data) => {
 
   if (duplicate) throw new Error("Subquestion already exists under this parent.");
 
-  return await SubQuestion.create({
+  const subQuestion = new SubQuestion({
     parentId,
     questionText: trimmedQuestion,
     options: trimmedOptions,
     correctAnswer: trimmedAnswer,
   });
+
+  await subQuestion.save(); 
+  return subQuestion;
 };
+
 exports.getSubQuestions = async (parentId) => {
   return await SubQuestion.find({ parentId }).sort({ createdAt: -1 });
 };

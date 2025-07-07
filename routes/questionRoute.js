@@ -2,7 +2,6 @@ const express = require("express");
 const router = express.Router();
 const questionBankController = require("../controller/questionController");
 
-
 // Parent Question API
 router.post("/", questionBankController.createOrUpdateQuestionBank);
 
@@ -11,10 +10,9 @@ router.post("/subquestion", questionBankController.addSubQuestion);
 router.get("/subquestion/:parentId", questionBankController.getSubQuestions);
 router.delete("/subquestion/:id", questionBankController.deleteSubQuestion);
 
-// filter by class,subject,medium, get all , search , pagination
+// Filter, status, delete
 router.get("/filter", questionBankController.getFilteredQuestionBank);
-// status update 
-router.put('/status/:id',questionBankController.changeStatus);
-//delete single , multiple
+router.put('/status/:id', questionBankController.changeStatus);
 router.delete('/delete', questionBankController.deleteSubjectSmart);
+
 module.exports = router;

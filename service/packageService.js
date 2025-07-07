@@ -1,20 +1,15 @@
+const { count } = require('console');
 const Package = require('../model/Package');
 const fs = require('fs');
 const path = require('path');
 const packageService = {
- addPackage : async ({
-  packageName,
-  className,
-  medium,
-  mockTests,
-  numberOfAttempts,
-  platform,
-  actualPrice,
-  discountPrice,
-  validityInDays,
-  image
-}) => {
-  const newPackage = new Package({
+
+
+
+
+addOrUpdatePackage: async (data, file) => {
+  const {
+    id,
     packageName,
     className,
     medium,
@@ -24,12 +19,87 @@ const packageService = {
     actualPrice,
     discountPrice,
     validityInDays,
-    image,
-  });
+    image = '',
+    description = '',
+    isActive
+  } = data;
 
-  await newPackage.save();
-  return newPackage;
+
+  if (Number(numberOfAttempts) > 3) {
+    throw new Error('Number of attempts cannot be more than 3');
+  }
+
+  const existing = await Package.findOne({ packageName: packageName.trim() });
+  if (existing && (!id || existing._id.toString() !== id)) {
+    throw new Error('Package with this name already exists');
+  }
+
+  const finalPrice = discountPrice < actualPrice ? discountPrice : actualPrice;
+
+  if (id) {
+
+    const pkg = await Package.findById(id);
+    if (!pkg) throw new Error('Package not found');
+
+    pkg.packageName = packageName;
+    pkg.className = className;
+    pkg.medium = medium;
+
+    if (typeof mockTests === 'string') {
+      pkg.mockTests = mockTests.split(',').map((m) => m.trim());
+    } else if (Array.isArray(mockTests)) {
+      pkg.mockTests = mockTests;
+    }
+
+    pkg.numberOfAttempts = numberOfAttempts;
+    pkg.platform = platform;
+    pkg.actualPrice = actualPrice;
+    pkg.discountPrice = discountPrice;
+    pkg.finalPrice = finalPrice;
+    pkg.validityInDays = validityInDays;
+    pkg.description = description;
+
+    if (typeof isActive !== 'undefined') {
+      pkg.isActive = String(isActive).toLowerCase() === 'true';
+    }
+
+    if (file) {
+      if (pkg.image) {
+        const oldImagePath = path.join(__dirname, '..', 'uploads', path.basename(pkg.image));
+        fs.unlink(oldImagePath, (err) => {
+          if (err) console.error('Failed to delete old image:', err);
+        });
+      }
+
+      pkg.image = `${file.protocol || 'http'}://${file.host || 'localhost:5000'}/uploads/${file.filename}`;
+    }
+
+    await pkg.save();
+    return pkg;
+  } else {
+   
+    const newPackage = new Package({
+      packageName,
+      className,
+      medium,
+      mockTests,
+      numberOfAttempts,
+      platform,
+      actualPrice,
+      discountPrice,
+      finalPrice,
+      validityInDays,
+      image,
+      description,
+    });
+
+    await newPackage.save();
+    return newPackage;
+  }
 },
+
+
+
 
  deletePackage : async (id) => {
   const packageToDelete = await Package.findById(id);
@@ -115,21 +185,22 @@ updatePackage : async (id, updatedData, file) => {
   await pkg.save();
   return pkg;
 },
- getPaginatedPackages: async (limit, offset) => {
-    const total = await Package.countDocuments();
-    const packages = await Package.find()
-      .skip(offset)
-      .limit(limit)
-      .sort({ createdAt: -1 }); // Optional: sort by latest
+getPaginatedPackages: async (limit, offset) => {
+  const total = await Package.countDocuments();
+  const packages = await Package.find()
+    .skip(offset)
+    .limit(limit)
+    .sort({ createdAt: -1 }); // keep this sorted version
 
-    return {
-      total,
-      count: packages.length,
-      packages,
-      nextOffset: offset + limit < total ? offset + limit : null,
-      prevOffset: offset - limit >= 0 ? offset - limit : null,
-    };
-  },
+  return {
+    total,
+    count: packages.length,
+    packages,
+    nextOffset: offset + limit < total ? offset + limit : null,
+    prevOffset: offset - limit >= 0 ? offset - limit : null,
+  };
+},
+
 
 
 
@@ -168,20 +239,8 @@ updatePackage : async (id, updatedData, file) => {
   await Package.deleteMany({ _id: { $in: ids } });
 },
 
- getPaginatedPackages : async (limit, offset) => {
-  const total = await Package.countDocuments();
-  const packages = await Package.find()
-    .skip(offset)
-    .limit(limit);
 
-  return {
-    total,
-    count: packages.length,
-    packages,
-    nextOffset: offset + limit < total ? offset + limit : null,
-    prevOffset: offset - limit >= 0 ? offset - limit : null,
-  };
-},
+
 }
 
 module.exports = packageService;

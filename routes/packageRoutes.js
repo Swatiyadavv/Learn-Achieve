@@ -4,14 +4,15 @@ const packageController = require('../controller/packageController');
 const upload = require('../middleware/uploadMiddleware');
 const { verifyToken } = require('../middleware/authMiddleware'); 
 
-//  Add package (protected + image upload)
-router.post('/add', verifyToken, upload.single('image'), packageController.addPackage);
+//add and update
+router.post('/add', upload.single('image'), packageController.addOrUpdatePackage);
+
 //  Delete package by ID (protected)
 router.delete('/delete/:id', verifyToken, packageController.deletePackage);
 // Get all packages (protected)
 router.get('/get', verifyToken, packageController.getAllPackages);
 // Update package
-router.put('/update/:id', verifyToken, upload.single('image'), packageController.updatePackage);
+// router.put('/update/:id', verifyToken, upload.single('image'), packageController.updatePackage);
 router.get('/search', verifyToken, packageController.searchPackages);
 router.delete('/delete-multiple', verifyToken, packageController.deleteMultiplePackages);
 router.get('/paginated', packageController.getPaginatedPackages);

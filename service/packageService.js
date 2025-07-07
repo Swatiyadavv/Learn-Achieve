@@ -117,9 +117,6 @@ addOrUpdatePackage: async (data, file) => {
   await Package.findByIdAndDelete(id);
 },
 
-//  getAllPackages : async () => {
-//   return await Package.find();
-// },
 
 getAllPackages : async () => {
   const packages = await Package.find({ isActive: true }); //  only active packages

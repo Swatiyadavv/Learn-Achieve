@@ -1,6 +1,11 @@
 const QuestionBank = require("../model/questionModel");
 require("../model/classMasterModel");
 require("../model/subjectModel");
+const SubQuestion = require("../model/subQuestionModel")
+const QuestionBank = require("../model/questionModel");
+const SubQuestion = require("../model/subQuestionModel");
+
+//  Create or Update Main Question
 exports.createOrUpdateQuestionBank = async (data) => {
   const {
     id,
@@ -10,87 +15,95 @@ exports.createOrUpdateQuestionBank = async (data) => {
     module,
     topicName,
     typeOfQuestion,
-    questionType,
+    questionType
   } = data;
 
+  //  Trim inputs
+  const cleanModule = module.trim();
+  const cleanTopic = topicName.trim();
+
   if (id) {
-    // Update existing record
+    //  Update
     const updated = await QuestionBank.findByIdAndUpdate(
       id,
-      { classId, subjectId, medium, module, topicName, typeOfQuestion, questionType },
+      {
+        classId,
+        subjectId,
+        medium,
+        module: cleanModule,
+        topicName: cleanTopic,
+        typeOfQuestion,
+        questionType,
+      },
       { new: true }
     );
-    if (!updated) throw new Error("QuestionBank entry not found.");
+
+    if (!updated) throw new Error("Question not found");
     return updated;
   } else {
-    // Check for duplicate
+    //  Duplicate check before creating
     const exists = await QuestionBank.findOne({
       classId,
       subjectId,
       medium,
-      module,
-      topicName,
+      module: cleanModule,
+      topicName: cleanTopic,
       typeOfQuestion,
       questionType,
     });
 
-    if (exists) throw new Error("This Question Bank entry already exists.");
+    if (exists) {
+      throw new Error("This Question Bank entry already exists.");
+    }
 
+    //  Create new
     return await QuestionBank.create({
       classId,
       subjectId,
       medium,
-      module,
-      topicName,
+      module: cleanModule,
+      topicName: cleanTopic,
       typeOfQuestion,
       questionType,
     });
   }
 };
+exports.addSubQuestion = async (data) => {
+  const { parentId, questionText, options, correctAnswer } = data;
 
-exports.getFilteredQuestionBank = async (query) => {
-  const {
-    classId,
-    subjectId,
-    medium,
-    typeOfQuestion,
-    questionType,
-    search,
-    limit = 10,
-    offset = 0,
-  } = query;
+  const trimmedQuestion = questionText.trim();
+  const trimmedOptions = options.map(opt => opt.trim());
+  const trimmedAnswer = correctAnswer.trim();
 
-  const filter = {};
+  //  Check duplicate subquestion under same parent
+  const duplicate = await SubQuestion.findOne({
+    parentId,
+    questionText: trimmedQuestion,
+    correctAnswer: trimmedAnswer,
+    options: trimmedOptions,
+  });
 
-  if (classId) filter.classId = classId;
-  if (subjectId) filter.subjectId = subjectId;
-  if (medium) filter.medium = medium;
-  if (typeOfQuestion) filter.typeOfQuestion = typeOfQuestion;
-  if (questionType) filter.questionType = questionType;
+  if (duplicate) throw new Error("Subquestion already exists under this parent.");
 
-  if (search) {
-    const regex = { $regex: search.trim(), $options: 'i' };
-    filter.$or = [{ module: regex }, { topicName: regex }];
-  }
-
-  const total = await QuestionBank.countDocuments(filter);
-
-  const questions = await QuestionBank.find(filter)
-    .populate("classId")
-    .populate("subjectId")
-    .sort({ createdAt: -1 })
-    .skip(Number(offset))
-    .limit(Number(limit));
-
-  return {
-    total,
-    count: questions.length,
-    questions,
-    nextOffset: offset + limit < total ? Number(offset) + Number(limit) : null,
-    prevOffset: offset - limit >= 0 ? Number(offset) - Number(limit) : null,
-  };
+  return await SubQuestion.create({
+    parentId,
+    questionText: trimmedQuestion,
+    options: trimmedOptions,
+    correctAnswer: trimmedAnswer,
+  });
+};
+exports.getSubQuestions = async (parentId) => {
+  return await SubQuestion.find({ parentId }).sort({ createdAt: -1 });
 };
 
+
+exports.deleteSubQuestion = async (id) => {
+  const sub = await SubQuestion.findById(id);
+  if (!sub) throw new Error("Subquestion not found");
+
+  await SubQuestion.findByIdAndDelete(id);
+  return true;
+};
 
 
 exports.updateStatus =async (id, status) => {

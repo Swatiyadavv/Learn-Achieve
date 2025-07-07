@@ -59,6 +59,8 @@ verifyRegistrationOtp: async (token, otp) => {
   const pending = await PendingUser.findOne({ email });
   if (!pending || pending.otp !== otp || pending.otpExpire < new Date())
     throw new Error(RESPONSE.OTP_INVALID);
+
+  
   const referralCode = generateReferralCode(email);
   const user = await User.create({
     email,

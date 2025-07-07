@@ -1,17 +1,47 @@
 const questionBankService = require("../service/questionService");
-
-exports.addOrUpdateQuestionBank = async (req, res) => {
+const { validateMainQuestion, validateSubQuestion } = require("../validation/questionValidation")
+exports.createOrUpdateQuestionBank = async (req, res) => {
   try {
+    const { error } = validateMainQuestion.validate(req.body);
+    if (error) return res.status(422).json({ success: false, message: error.message });
+
     const result = await questionBankService.createOrUpdateQuestionBank(req.body);
-    res.status(200).json({
-      success: true,
-      message: req.body.id ? "Updated successfully" : "Created successfully",
-      data: result,
-    });
-  } catch (error) {
-    res.status(400).json({ success: false, message: error.message });
+    res.status(200).json({ success: true, message: req.body.id ? "Updated" : "Created", data: result });
+  } catch (err) {
+    res.status(400).json({ success: false, message: err.message });
   }
 };
+
+exports.addSubQuestion = async (req, res) => {
+  try {
+    const { error } = validateSubQuestion.validate(req.body);
+    if (error) return res.status(422).json({ success: false, message: error.message });
+
+    const result = await questionBankService.addSubQuestion(req.body);
+    res.status(200).json({ success: true, message: "Subquestion added", data: result });
+  } catch (err) {
+    res.status(400).json({ success: false, message: err.message });
+  }
+};
+
+exports.getSubQuestions = async (req, res) => {
+  try {
+    const subQuestions = await questionBankService.getSubQuestions(req.params.parentId);
+    res.status(200).json({ success: true, subQuestions });
+  } catch (err) {
+    res.status(400).json({ success: false, message: err.message });
+  }
+};
+
+exports.deleteSubQuestion = async (req, res) => {
+  try {
+    await questionBankService.deleteSubQuestion(req.params.id);
+    res.status(200).json({ success: true, message: "Subquestion deleted" });
+  } catch (err) {
+    res.status(400).json({ success: false, message: err.message });
+  }
+};
+
 
 
 exports.getFilteredQuestionBank = async (req, res) => {

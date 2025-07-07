@@ -139,6 +139,5 @@ exports.deleteSubject= async (id) => {
         });
       }
     }
-
-    await QuestionBank.deleteMany({ _id: { $in: ids } });
+await QuestionBank.deleteMany({ _id: { $in: ids } });
   };

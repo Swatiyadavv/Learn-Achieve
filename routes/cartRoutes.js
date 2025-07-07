@@ -8,4 +8,5 @@ router.get('/get', verifyUserToken, cartController.getUserCart);
 router.delete('/remove/:packageId', verifyUserToken, cartController.removeFromCart);
 router.post('/remove-multiple', verifyUserToken, cartController.removeMultipleFromCart);
 
+
 module.exports = router;

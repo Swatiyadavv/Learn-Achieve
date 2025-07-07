@@ -17,3 +17,5 @@ router.post("/verify-reset-otp", protect, controller.verifyResetOtp);
 router.post("/reset-password",protect, controller.resetPassword);
 
 module.exports = router;
+
+

@@ -59,7 +59,17 @@ const cartController = {
   } catch (err) {
     res.status(400).json({ message: err.message });
   }
+},
+getCartItemCount: async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const count = await cartService.getCartItemCount(userId);
+    res.status(200).json({ totalItems: count });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
 }
+
   
 };
 

@@ -188,9 +188,12 @@ resetPassword: async (token, newPassword) => {
   return { message: "Password has been reset successfully." };
 },
 
-};
-
-
+  getUserDetails: async (userId) => {
+  const user = await User.findById(userId).select("-__v -otp -otpExpire -loginOtp -loginOtpExpire");
+  if (!user) throw new Error("Admin not found");
+  return user;
+},
+}
 
 
 

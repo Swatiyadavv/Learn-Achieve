@@ -7,7 +7,6 @@ router.post("/", questionBankController.createOrUpdateQuestionBank);
 router.post("/subquestion", questionBankController.addSubQuestion);
 router.get("/subquestion/:parentId", questionBankController.getSubQuestions);
 router.delete("/subquestion/:id", questionBankController.deleteSubQuestion);
-
 // Filter, status, delete
 router.get("/filter", questionBankController.getFilteredQuestionBank);
 router.put('/status/:id', questionBankController.changeStatus);

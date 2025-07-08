@@ -2,10 +2,29 @@ const QuestionBank = require("../model/questionModel");
 require("../model/classMasterModel");
 require("../model/subjectModel");
 const SubQuestion = require("../model/subQuestionModel")
+exports.getFilteredQuestionBank = async (queryParams) => {
+  const { query = "", limit = 10, offset = 0 } = queryParams;
+  const searchRegex = new RegExp(query, "i");
 
-// const QuestionBank = require("../model/questionModel");
-// const SubQuestion = require("../model/subQuestionModel");
+  const filter = {
+    topicName: { $regex: searchRegex },
+  };
 
+  const [questions, total] = await Promise.all([
+    QuestionBank.find(filter)
+      .skip(parseInt(offset))
+      .limit(parseInt(limit))
+      .sort({ createdAt: -1 }),
+    QuestionBank.countDocuments(filter),
+  ]);
+
+  return {
+    total,
+    limit: parseInt(limit),
+    offset: parseInt(offset),
+    questions,
+  };
+};
 
 exports.createOrUpdateQuestionBank = async (data) => {
   const {

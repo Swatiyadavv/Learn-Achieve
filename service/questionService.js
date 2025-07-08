@@ -3,6 +3,10 @@ require("../model/classMasterModel");
 require("../model/subjectModel");
 const SubQuestion = require("../model/subQuestionModel")
 
+// const QuestionBank = require("../model/questionModel");
+// const SubQuestion = require("../model/subQuestionModel");
+
+
 exports.createOrUpdateQuestionBank = async (data) => {
   const {
     id,

@@ -81,9 +81,22 @@ const removeMultipleFromCart = async (userId, packageIds) => {
   return cart;
 };
 
+const getCartItemCount = async (userId) => {
+  const cart = await Cart.findOne({ userId });
+  if (!cart) return 0;
+
+  let totalQuantity = 0;
+  for (const item of cart.packages) {
+    totalQuantity += item.quantity || 1;
+  }
+
+  return totalQuantity;
+};
+
 module.exports = {
   addToCart,
   getUserCart,
   removeFromCart,
-  removeMultipleFromCart
+  removeMultipleFromCart,
+  getCartItemCount
 };

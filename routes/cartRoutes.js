@@ -7,6 +7,7 @@ router.post('/add', verifyUserToken, cartController.addToCart);
 router.get('/get', verifyUserToken, cartController.getUserCart);
 router.delete('/remove/:packageId', verifyUserToken, cartController.removeFromCart);
 router.post('/remove-multiple', verifyUserToken, cartController.removeMultipleFromCart);
+router.get('/count',verifyUserToken, cartController.getCartItemCount);
 
 
 module.exports = router;

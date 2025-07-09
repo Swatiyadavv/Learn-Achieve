@@ -13,13 +13,13 @@ const protect = async (req, res, next) => {
   try {
     const decoded = jwt.verify(token, JWT_SECRET);
 
-    // ✅ CASE 1: Final token after registration/login (has id)
+    //  CASE 1: Final token after registration/login (has id)
     if (decoded.id) {
       const admin = await Admin.findById(decoded.id);
       if (!admin) return res.status(404).json({ message: "Admin not found" });
     req.admin = admin;
     } 
-    // ✅ CASE 2: Temp token for registration OTP (has only email)
+    //  CASE 2: Temp token for registration OTP (has only email)
     else if (decoded.email) {
       req.admin = { email: decoded.email };
     } 

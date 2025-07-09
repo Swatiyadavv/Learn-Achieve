@@ -2,6 +2,87 @@ const QuestionBank = require("../model/questionModel");
 require("../model/classMasterModel");
 require("../model/subjectModel");
 const SubQuestion = require("../model/subQuestionModel")
+
+exports.createOrUpdateQuestionBank = async (data) => {
+  const {
+    id, classId, subjectId, medium, module,
+    topicName, typeOfQuestion, questionType,
+    questionText, options, correctAnswer
+  } = data;
+
+  const cleanModule = module.trim();
+  const cleanTopic = topicName.trim();
+
+  if (id) {
+    const updated = await QuestionBank.findById(id);
+    if (!updated) throw new Error("Question not found");
+
+    updated.classId = classId;
+    updated.subjectId = subjectId;
+    updated.medium = medium;
+    updated.module = cleanModule;
+    updated.topicName = cleanTopic;
+    updated.typeOfQuestion = typeOfQuestion;
+    updated.questionType = questionType;
+
+    if (typeOfQuestion === "General") {
+      updated.questionText = questionText.trim();
+      updated.options = options.map(opt => opt.trim());
+      updated.correctAnswer = correctAnswer.trim();
+    } else {
+      // Clear general fields
+      updated.questionText = null;
+      updated.options = [];
+      updated.correctAnswer = null;
+    }
+
+    await updated.save();
+    return updated;
+  }
+
+  const exists = await QuestionBank.findOne({
+    classId, subjectId, medium,
+    module: cleanModule, topicName: cleanTopic,
+    typeOfQuestion, questionType
+  });
+  if (exists) throw new Error("This Question Bank entry already exists.");
+
+  const question = new QuestionBank({
+    classId, subjectId, medium,
+    module: cleanModule, topicName: cleanTopic,
+    typeOfQuestion, questionType
+  });
+
+  if (typeOfQuestion === "General") {
+    if (!questionText || !options || options.length !== 4 || !correctAnswer)
+      throw new Error("General question must have text, 4 options, and correct answer.");
+    question.questionText = questionText.trim();
+    question.options = options.map(opt => opt.trim());
+    question.correctAnswer = correctAnswer.trim();
+  }
+
+  await question.save();
+  return question;
+};
+
+exports.addSubQuestion = async (data) => {
+  const { parentId, questionText, options, correctAnswer } = data;
+
+  if (!questionText || options.length !== 4 || !correctAnswer) {
+    throw new Error("Subquestion must have question, 4 options, and correct answer.");
+  }
+
+  const subQuestion = new SubQuestion({
+    parentId,
+    questionText: questionText.trim(),
+    options: options.map(opt => opt.trim()),
+    correctAnswer: correctAnswer.trim()
+  });
+  await subQuestion.save();
+  return subQuestion;
+};
+
+
 exports.getFilteredQuestionBank = async (queryParams) => {
   const { query = "", limit = 10, offset = 0 } = queryParams;
   const searchRegex = new RegExp(query, "i");
@@ -25,97 +106,6 @@ exports.getFilteredQuestionBank = async (queryParams) => {
     questions,
   };
 };
-
-exports.createOrUpdateQuestionBank = async (data) => {
-  const {
-    id,
-    classId,
-    subjectId,
-    medium,
-    module,
-    topicName,
-    typeOfQuestion,
-    questionType,
-  } = data;
-
-  const cleanModule = module.trim();
-  const cleanTopic = topicName.trim();
-
-  if (id) {
-    // Update flow
-    const updated = await QuestionBank.findById(id);
-    if (!updated) throw new Error("Question not found");
-
-    updated.classId = classId;
-    updated.subjectId = subjectId;
-    updated.medium = medium;
-    updated.module = cleanModule;
-    updated.topicName = cleanTopic;
-    updated.typeOfQuestion = typeOfQuestion;
-    updated.questionType = questionType;
-
-    await updated.save(); //  Explicit save
-    return updated;
-  } else {
-    // Duplicate check
-    const exists = await QuestionBank.findOne({
-      classId,
-      subjectId,
-      medium,
-      module: cleanModule,
-      topicName: cleanTopic,
-      typeOfQuestion,
-      questionType,
-    });
-
-    if (exists) {
-      throw new Error("This Question Bank entry already exists.");
-    }
-
-    // Create new + save
-    const question = new QuestionBank({
-      classId,
-      subjectId,
-      medium,
-      module: cleanModule,
-      topicName: cleanTopic,
-      typeOfQuestion,
-      questionType,
-    });
-
-    await question.save(); // 
-    return question;
-  }
-};
-
-exports.addSubQuestion = async (data) => {
-  const { parentId, questionText, options, correctAnswer } = data;
-
-  const trimmedQuestion = questionText.trim();
-  const trimmedOptions = options.map(opt => opt.trim());
-  const trimmedAnswer = correctAnswer.trim();
-
-  // Duplicate check
-  const duplicate = await SubQuestion.findOne({
-    parentId,
-    questionText: trimmedQuestion,
-    correctAnswer: trimmedAnswer,
-    options: trimmedOptions,
-  });
-
-  if (duplicate) throw new Error("Subquestion already exists under this parent.");
-
-  const subQuestion = new SubQuestion({
-    parentId,
-    questionText: trimmedQuestion,
-    options: trimmedOptions,
-    correctAnswer: trimmedAnswer,
-  });
-
-  await subQuestion.save(); 
-  return subQuestion;
-};
-
 exports.getSubQuestions = async (parentId) => {
   return await SubQuestion.find({ parentId }).sort({ createdAt: -1 });
 };
@@ -128,7 +118,6 @@ exports.deleteSubQuestion = async (id) => {
   await SubQuestion.findByIdAndDelete(id);
   return true;
 };
-
 
 exports.updateStatus =async (id, status) => {
   if (!['active', 'inactive'].includes(status)) {

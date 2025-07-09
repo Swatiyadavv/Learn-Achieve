@@ -68,6 +68,9 @@ packageSchema.pre('save', function (next) {
   this.finalPrice = this.actualPrice - this.discountPrice;
   next();
 });
-
 const Package = mongoose.model('Package', packageSchema);
+<<<<<<< HEAD
 module.exports = Package;
+=======
+module.exports = Package;
+>>>>>>> a596c0d28431ac80ea6b17c7a0ce6af05ad7eb82

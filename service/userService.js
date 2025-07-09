@@ -5,11 +5,8 @@ const jwt = require("jsonwebtoken");
 const { otp: generateOtp, sentOtp: sendOtpEmail } = require("../utils/otpUtils");
 const otpUtils = require("../utils/otpUtils");
 const {generateReferralCode} = require("../utils/referralUtils")
-
 const RESPONSE = require("../enums/responseMessageEnum");
-
 const JWT_SECRET = process.env.JWT_SECRET || "secret";
-
 const userService = {
 // Inside userService
 registerUser: async ({ email, password }) => {
@@ -37,17 +34,14 @@ registerUser: async ({ email, password }) => {
 // verifyRegistrationOtp: async (token, otp) => {
 //   const decoded = jwt.verify(token, JWT_SECRET);
 //   const email = decoded.email;
-
 //   const pending = await PendingUser.findOne({ email });
 //   if (!pending || pending.otp !== otp || pending.otpExpire < new Date())
 //     throw new Error(RESPONSE.OTP_INVALID);
-
 //   const user = await User.create({
 //     email,
 //     password: pending.password,
 //     isVerified: true,
 //   });
-
 //   await pending.deleteOne();
 //   return { message: RESPONSE.OTP_VERIFIED };
 // },`
@@ -59,8 +53,6 @@ verifyRegistrationOtp: async (token, otp) => {
   const pending = await PendingUser.findOne({ email });
   if (!pending || pending.otp !== otp || pending.otpExpire < new Date())
     throw new Error(RESPONSE.OTP_INVALID);
-
-  
   const referralCode = generateReferralCode(email);
   const user = await User.create({
     email,
@@ -194,12 +186,4 @@ resetPassword: async (token, newPassword) => {
   return user;
 },
 }
-
-
-
 module.exports = userService;
-
-
-
-
-

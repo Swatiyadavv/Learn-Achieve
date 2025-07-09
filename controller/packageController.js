@@ -1,7 +1,7 @@
 const packageService = require('../service/packageService');
 
 const packageController = {
-  // ✅ Unified Add/Update Package
+  //  Unified Add/Update Package
   addOrUpdatePackage: async (req, res) => {
     try {
       const {

@@ -54,8 +54,7 @@ const mockTestService = {
 
   const mockTestData = {
     mockTestName,
-    medium,
-    class: classIds,
+    medium,    class: classIds,
     subjects,
     duration,
     totalQuestions,

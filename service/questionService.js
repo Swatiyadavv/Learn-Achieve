@@ -3,27 +3,17 @@ require("../model/classMasterModel");
 require("../model/subjectModel");
 const SubQuestion = require("../model/subQuestionModel")
 
-// const QuestionBank = require("../model/questionModel");
-// const SubQuestion = require("../model/subQuestionModel");
-
-
 exports.createOrUpdateQuestionBank = async (data) => {
   const {
-    id,
-    classId,
-    subjectId,
-    medium,
-    module,
-    topicName,
-    typeOfQuestion,
-    questionType,
+    id, classId, subjectId, medium, module,
+    topicName, typeOfQuestion, questionType,
+    questionText, options, correctAnswer
   } = data;
 
   const cleanModule = module.trim();
   const cleanTopic = topicName.trim();
 
   if (id) {
-    // Update flow
     const updated = await QuestionBank.findById(id);
     if (!updated) throw new Error("Question not found");
 
@@ -35,68 +25,87 @@ exports.createOrUpdateQuestionBank = async (data) => {
     updated.typeOfQuestion = typeOfQuestion;
     updated.questionType = questionType;
 
-    await updated.save(); //  Explicit save
-    return updated;
-  } else {
-    // Duplicate check
-    const exists = await QuestionBank.findOne({
-      classId,
-      subjectId,
-      medium,
-      module: cleanModule,
-      topicName: cleanTopic,
-      typeOfQuestion,
-      questionType,
-    });
-
-    if (exists) {
-      throw new Error("This Question Bank entry already exists.");
+    if (typeOfQuestion === "General") {
+      updated.questionText = questionText.trim();
+      updated.options = options.map(opt => opt.trim());
+      updated.correctAnswer = correctAnswer.trim();
+    } else {
+      // Clear general fields
+      updated.questionText = null;
+      updated.options = [];
+      updated.correctAnswer = null;
     }
 
-    // Create new + save
-    const question = new QuestionBank({
-      classId,
-      subjectId,
-      medium,
-      module: cleanModule,
-      topicName: cleanTopic,
-      typeOfQuestion,
-      questionType,
-    });
-
-    await question.save(); // 
-    return question;
+    await updated.save();
+    return updated;
   }
+
+  const exists = await QuestionBank.findOne({
+    classId, subjectId, medium,
+    module: cleanModule, topicName: cleanTopic,
+    typeOfQuestion, questionType
+  });
+  if (exists) throw new Error("This Question Bank entry already exists.");
+
+  const question = new QuestionBank({
+    classId, subjectId, medium,
+    module: cleanModule, topicName: cleanTopic,
+    typeOfQuestion, questionType
+  });
+
+  if (typeOfQuestion === "General") {
+    if (!questionText || !options || options.length !== 4 || !correctAnswer)
+      throw new Error("General question must have text, 4 options, and correct answer.");
+    question.questionText = questionText.trim();
+    question.options = options.map(opt => opt.trim());
+    question.correctAnswer = correctAnswer.trim();
+  }
+
+  await question.save();
+  return question;
 };
 
 exports.addSubQuestion = async (data) => {
   const { parentId, questionText, options, correctAnswer } = data;
 
-  const trimmedQuestion = questionText.trim();
-  const trimmedOptions = options.map(opt => opt.trim());
-  const trimmedAnswer = correctAnswer.trim();
-
-  // Duplicate check
-  const duplicate = await SubQuestion.findOne({
-    parentId,
-    questionText: trimmedQuestion,
-    correctAnswer: trimmedAnswer,
-    options: trimmedOptions,
-  });
-
-  if (duplicate) throw new Error("Subquestion already exists under this parent.");
+  if (!questionText || options.length !== 4 || !correctAnswer) {
+    throw new Error("Subquestion must have question, 4 options, and correct answer.");
+  }
 
   const subQuestion = new SubQuestion({
     parentId,
-    questionText: trimmedQuestion,
-    options: trimmedOptions,
-    correctAnswer: trimmedAnswer,
+    questionText: questionText.trim(),
+    options: options.map(opt => opt.trim()),
+    correctAnswer: correctAnswer.trim()
   });
-
-  await subQuestion.save(); 
+  await subQuestion.save();
   return subQuestion;
 };
 
+
+exports.getFilteredQuestionBank = async (queryParams) => {
+  const { query = "", limit = 10, offset = 0 } = queryParams;
+  const searchRegex = new RegExp(query, "i");
+
+  const filter = {
+    topicName: { $regex: searchRegex },
+  };
+
+  const [questions, total] = await Promise.all([
+    QuestionBank.find(filter)
+      .skip(parseInt(offset))
+      .limit(parseInt(limit))
+      .sort({ createdAt: -1 }),
+    QuestionBank.countDocuments(filter),
+  ]);
+
+  return {
+    total,
+    limit: parseInt(limit),
+    offset: parseInt(offset),
+    questions,
+  };
+};
 exports.getSubQuestions = async (parentId) => {
   return await SubQuestion.find({ parentId }).sort({ createdAt: -1 });
 };
@@ -109,7 +118,6 @@ exports.deleteSubQuestion = async (id) => {
   await SubQuestion.findByIdAndDelete(id);
   return true;
 };
-
 
 exports.updateStatus =async (id, status) => {
   if (!['active', 'inactive'].includes(status)) {

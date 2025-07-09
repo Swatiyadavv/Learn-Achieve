@@ -1,5 +1,6 @@
 const questionBankService = require("../service/questionService");
 const { validateMainQuestion, validateSubQuestion } = require("../validation/questionValidation")
+ 
 exports.createOrUpdateQuestionBank = async (req, res) => {
   try {
     const { error } = validateMainQuestion.validate(req.body);
@@ -14,6 +15,19 @@ exports.createOrUpdateQuestionBank = async (req, res) => {
 
 exports.addSubQuestion = async (req, res) => {
   try {
+    if (!req.body.options && req.body['options[0]']) {
+      const options = [];
+      for (let i = 0; i < 10; i++) {
+        const key = `options[${i}]`;
+        if (req.body[key]) {
+          options.push(req.body[key]);
+        } else {
+          break;
+        }
+      }
+      req.body.options = options;
+    }
+
     const { error } = validateSubQuestion.validate(req.body);
     if (error) return res.status(422).json({ success: false, message: error.message });
 
@@ -23,6 +37,8 @@ exports.addSubQuestion = async (req, res) => {
     res.status(400).json({ success: false, message: err.message });
   }
 };
+
+
 
 exports.getSubQuestions = async (req, res) => {
   try {
@@ -87,3 +103,5 @@ exports.changeStatus = async (req, res) => {
         res.status(500).json({ message: 'Delete failed', error: err.message });
       }
     };
+
+   

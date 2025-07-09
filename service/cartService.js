@@ -25,24 +25,81 @@ const addToCart = async (userId, packageId) => {
 
 
 
+// const getUserCart = async (userId) => {
+//   const cart = await Cart.findOne({ userId }).populate('packages.packageId');
+//   if (!cart) return [];
+
+//   const detailedPackages = cart.packages.map(item => {
+//     const pkg = item.packageId;
+//     return {
+//       packageId: pkg._id,
+//       name: pkg.name,
+//       finalPrice: pkg.finalPrice,
+//       quantity: item.quantity,
+//       totalPrice: item.quantity * pkg.finalPrice
+//     };
+//   });
+
+//   return detailedPackages;
+// };
+
 const getUserCart = async (userId) => {
   const cart = await Cart.findOne({ userId }).populate('packages.packageId');
-  if (!cart) return [];
 
-  const detailedPackages = cart.packages.map(item => {
-    const pkg = item.packageId;
+  if (!cart || cart.packages.length === 0) {
     return {
-      packageId: pkg._id,
-      name: pkg.name,
-      finalPrice: pkg.finalPrice,
-      quantity: item.quantity,
-      totalPrice: item.quantity * pkg.finalPrice
+      cartCount: 0,
+      cartList: [],
+      summary: {
+        subTotal: "0.00",
+        discountAmt: "0.00",
+        grandTotal: "0.00",
+        grandTotalCoordinator: "0.00"
+      }
     };
-  });
+  }
 
-  return detailedPackages;
+  const cartList = cart.packages
+    .filter(item => item.packageId) 
+    .map(item => {
+      const pkg = item.packageId;
+
+      const quantity = item.quantity || 1;
+      const finalPrice = pkg.finalPrice || 0;
+      const totalPrice = quantity * finalPrice;
+
+      return {
+        cart_id: cart._id,
+        package_id: pkg._id,
+        name: pkg.packageName,
+        platform: pkg.platform,
+        medium: pkg.medium,
+         image: pkg.image,
+        finalPrice,
+        quantity,
+        totalPrice
+      };
+    });
+
+  const subTotal = cartList.reduce((sum, item) => sum + item.totalPrice, 0);
+  const discountAmt = cart.packages
+    .filter(item => item.packageId)
+    .reduce((sum, item) => sum + (item.packageId.discountPrice || 0), 0);
+
+  const grandTotal = subTotal;
+  const grandTotalCoordinator = subTotal - discountAmt;
+
+  return {
+    cartCount: cartList.length,
+    cartList,
+    summary: {
+      subTotal: subTotal.toFixed(2),
+      discountAmt: discountAmt.toFixed(2),
+      grandTotal: grandTotal.toFixed(2),
+      grandTotalCoordinator: grandTotalCoordinator.toFixed(2)
+    }
+  };
 };
-
 
 const removeFromCart = async (userId, packageId) => {
   const cart = await Cart.findOne({ userId });

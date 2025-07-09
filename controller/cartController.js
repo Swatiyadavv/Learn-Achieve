@@ -14,16 +14,30 @@ const cartController = {
     }
   },
 
-  getUserCart: async (req, res) => {
-    try {
-      const userId = req.user.id;
-      const packages = await cartService.getUserCart(userId);
-      res.status(200).json(packages);
+  // getUserCart: async (req, res) => {
+  //   try {
+  //     const userId = req.user.id;
+  //     const packages = await cartService.getUserCart(userId);
+  //     res.status(200).json(packages);
 
-    } catch (err) {
-      res.status(500).json({ message: err.message });
-    }
-  },
+  //   } catch (err) {
+  //     res.status(500).json({ message: err.message });
+  //   }
+  // },
+getUserCart: async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const cartData = await cartService.getUserCart(userId);
+
+    res.status(200).json({
+      message: 'Success',
+      ...cartData
+    });
+
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+},
 
  removeFromCart: async (req, res) => {
   try {

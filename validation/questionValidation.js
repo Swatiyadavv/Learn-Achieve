@@ -1,6 +1,7 @@
 const Joi = require("joi");
 
 exports.validateMainQuestion = Joi.object({
+  id: Joi.string().optional(), 
   classId: Joi.string().required(),
   subjectId: Joi.string().required(),
   medium: Joi.string().required(),

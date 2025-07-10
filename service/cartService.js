@@ -6,8 +6,15 @@ const calculateSummary = (packages) => {
   let discountAmt = 0;
 
   packages.forEach(pkg => {
-    subTotal += pkg.totalPrice;
-    discountAmt += pkg.discountPrice || 0;
+    const actualPrice = pkg.actualPrice || pkg.finalPrice || 0;
+    const finalPrice = pkg.finalPrice || 0;
+    const quantity = pkg.quantity || 1;
+    const totalPrice = finalPrice * quantity;
+
+    subTotal += totalPrice;
+
+    const perUnitDiscount = actualPrice - finalPrice;
+    discountAmt += perUnitDiscount * quantity;
   });
 
   const grandTotal = subTotal;
@@ -21,14 +28,14 @@ const calculateSummary = (packages) => {
   };
 };
 
-// Add a package to the user's cart
 const addToCart = async (userId, packageId) => {
   const pkg = await Package.findById(packageId);
   if (!pkg) throw new Error("Package not found");
 
+  const actualPrice = pkg.actualPrice || pkg.finalPrice || 0;
   const finalPrice = pkg.finalPrice || 0;
-  const discountPrice = pkg.discountPrice || 0;
-  const totalPrice = finalPrice; // You can adjust if quantity > 1
+  const discountPrice = actualPrice - finalPrice;
+  const totalPrice = finalPrice;
 
   const packageToAdd = {
     packageId: pkg._id,
@@ -36,6 +43,7 @@ const addToCart = async (userId, packageId) => {
     platform: pkg.platform,
     medium: pkg.medium,
     image: pkg.image,
+    actualPrice,
     finalPrice,
     discountPrice,
     quantity: 1,
@@ -45,14 +53,12 @@ const addToCart = async (userId, packageId) => {
   let cart = await Cart.findOne({ userId });
 
   if (!cart) {
-    // Create new cart
     cart = new Cart({
       userId,
       packages: [packageToAdd],
       summary: calculateSummary([packageToAdd])
     });
   } else {
-    // Prevent duplicate
     const existing = cart.packages.find(p => p.packageId.toString() === packageId);
     if (existing) throw new Error("Package already in cart");
 
@@ -110,6 +116,7 @@ const getUserCart = async (userId) => {
   const summary = calculateSummary(cart.packages);
 
   return {
+    message: "Success",
     cartCount: cartList.length,
     cartList,
     summary,
@@ -127,6 +134,7 @@ const removeFromCart = async (userId, packageId) => {
     return null;
   }
 
+  cart.summary = calculateSummary(cart.packages);
   await cart.save();
 
   const cartList = cart.packages.map(item => ({
@@ -141,12 +149,10 @@ const removeFromCart = async (userId, packageId) => {
     totalPrice: item.totalPrice,
   }));
 
-  const summary = calculateSummary(cart.packages);
-
   return {
     cartCount: cartList.length,
     cartList,
-    summary,
+    summary: cart.summary,
   };
 };
 
@@ -161,6 +167,7 @@ const removeMultipleFromCart = async (userId, packageIds) => {
     return null;
   }
 
+  cart.summary = calculateSummary(cart.packages);
   await cart.save();
 
   const cartList = cart.packages.map(item => ({
@@ -175,12 +182,10 @@ const removeMultipleFromCart = async (userId, packageIds) => {
     totalPrice: item.totalPrice,
   }));
 
-  const summary = calculateSummary(cart.packages);
-
   return {
     cartCount: cartList.length,
     cartList,
-    summary,
+    summary: cart.summary,
   };
 };
 

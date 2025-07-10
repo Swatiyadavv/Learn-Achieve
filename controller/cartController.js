@@ -1,18 +1,22 @@
 const cartService = require('../service/cartService');
 
 const cartController = {
-  addToCart: async (req, res) => {
-    try {
-      const userId = req.user.id;
-      const { packageId } = req.body;
+ addToCart: async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { packageId } = req.body;
 
-      const cart = await cartService.addToCart(userId, packageId);
-      res.status(200).json({ message: 'Package added to cart', cart });
+    const cartData = await cartService.addToCart(userId, packageId);
+    res.status(200).json({
+      message: 'Package added to cart',
+      ...cartData
+    });
 
-    } catch (err) {
-      res.status(400).json({ message: err.message });
-    }
-  },
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+},
+
 
   // getUserCart: async (req, res) => {
   //   try {

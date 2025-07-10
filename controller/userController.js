@@ -73,9 +73,9 @@ exports.resetPassword = async (req, res) => {
   }
 };
 
-exports.getAdminDetails=async (req, res) => {
+exports.getUserDetails = async (req, res) => {
   try {
-    const result = await userService.getUserDetails(req.admin._id);
+    const result = await userService.getUserDetails(req.user._id);
     res.status(200).json(result);
   } catch (err) {
     res.status(400).json({ message: err.message });

@@ -182,7 +182,7 @@ resetPassword: async (token, newPassword) => {
 
   getUserDetails: async (userId) => {
   const user = await User.findById(userId).select("-__v -otp -otpExpire -loginOtp -loginOtpExpire");
-  if (!user) throw new Error("Admin not found");
+  if (!user) throw new Error("User not found");
   return user;
 },
 }

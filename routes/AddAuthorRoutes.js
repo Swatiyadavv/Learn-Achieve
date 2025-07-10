@@ -6,6 +6,7 @@ const path = require('path');
 const fs = require('fs');
 const authorController = require('../controller/AddAuthorController');
 
+
 // Ensure uploads/author directory exists
 const uploadDir = path.join(__dirname, '..', 'uploads', 'author');
 if (!fs.existsSync(uploadDir)) {
@@ -36,6 +37,10 @@ const upload = multer({
 
 // http://localhost:5000/uploads/author/1752138969597.jpg --> for image url
 
-router.post('/add-author', upload.single('image'), authorController.addAuthor);
+router.post('/add', upload.single('image'), authorController.addAuthor);
+// get with limit offset and search 
+router.get('/get', authorController.getAllAuthors);
+router.delete('/delete', authorController.deleteAuthorController);
+router.patch('/toggle/:id', authorController.toggleAuthorStatus);
 
 module.exports = router;

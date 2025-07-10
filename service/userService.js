@@ -84,7 +84,7 @@ verifyRegistrationOtp: async (token, otp) => {
 
   await otpUtils.sentOtp(email, otp);
 
-  // 🟡 Generate a short-lived token with the email only
+
   const token = jwt.sign({ email }, JWT_SECRET, { expiresIn: "10m" });
 
   return { message: RESPONSE.LOGIN_OTP_SENT, token };
@@ -156,7 +156,6 @@ verifyResetOtp: async (token, otp) => {
   user.loginOtpExpire = null;
   await user.save();
 
-  // 🟡 Issue new token for secure password reset
   const resetToken = jwt.sign({ email }, JWT_SECRET, { expiresIn: "15m" });
 
   return {

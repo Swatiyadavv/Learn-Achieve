@@ -1,20 +1,14 @@
 const Cart = require('../model/Cart');
 const Package = require('../model/Package');
 
+// Calculate summary for cart
 const calculateSummary = (packages) => {
   let subTotal = 0;
   let discountAmt = 0;
 
   packages.forEach(pkg => {
-    const actualPrice = pkg.actualPrice || pkg.finalPrice || 0;
-    const finalPrice = pkg.finalPrice || 0;
-    const quantity = pkg.quantity || 1;
-    const totalPrice = finalPrice * quantity;
-
-    subTotal += totalPrice;
-
-    const perUnitDiscount = actualPrice - finalPrice;
-    discountAmt += perUnitDiscount * quantity;
+    subTotal += pkg.totalPrice;
+    discountAmt += (pkg.actualPrice - pkg.finalPrice) || 0;
   });
 
   const grandTotal = subTotal;
@@ -28,11 +22,12 @@ const calculateSummary = (packages) => {
   };
 };
 
+// Add package to user's cart
 const addToCart = async (userId, packageId) => {
   const pkg = await Package.findById(packageId);
   if (!pkg) throw new Error("Package not found");
 
-  const actualPrice = pkg.actualPrice || pkg.finalPrice || 0;
+  const actualPrice = pkg.actualPrice || 0;
   const finalPrice = pkg.finalPrice || 0;
   const discountPrice = actualPrice - finalPrice;
   const totalPrice = finalPrice;
@@ -43,7 +38,7 @@ const addToCart = async (userId, packageId) => {
     platform: pkg.platform,
     medium: pkg.medium,
     image: pkg.image,
-    actualPrice,
+    actualPrice,             // ✅ Added
     finalPrice,
     discountPrice,
     quantity: 1,
@@ -86,6 +81,7 @@ const addToCart = async (userId, packageId) => {
   };
 };
 
+// Get user's cart
 const getUserCart = async (userId) => {
   const cart = await Cart.findOne({ userId });
   if (!cart || cart.packages.length === 0) {
@@ -123,6 +119,7 @@ const getUserCart = async (userId) => {
   };
 };
 
+// Remove one package from cart
 const removeFromCart = async (userId, packageId) => {
   const cart = await Cart.findOne({ userId });
   if (!cart) throw new Error('Cart not found');
@@ -156,6 +153,7 @@ const removeFromCart = async (userId, packageId) => {
   };
 };
 
+// Remove multiple packages
 const removeMultipleFromCart = async (userId, packageIds) => {
   const cart = await Cart.findOne({ userId });
   if (!cart) throw new Error('Cart not found');
@@ -189,6 +187,7 @@ const removeMultipleFromCart = async (userId, packageIds) => {
   };
 };
 
+// Get cart item count
 const getCartItemCount = async (userId) => {
   const cart = await Cart.findOne({ userId });
   return cart ? cart.packages.length : 0;

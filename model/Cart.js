@@ -11,6 +11,7 @@ const cartPackageSchema = new mongoose.Schema({
   medium: String,
   image: String,
   finalPrice: Number,
+  actualPrice: Number, 
   quantity: {
     type: Number,
     default: 1,

@@ -9,7 +9,7 @@ const RESPONSE = require("../enums/responseMessageEnum");
 const JWT_SECRET = process.env.JWT_SECRET || "secret";
 const userService = {
 // Inside userService
-registerUser: async ({ email, password }) => {
+registerUser: async ({ name, email, password }) => {
   const existing = await User.findOne({ email });
   if (existing) throw new Error(RESPONSE.USER_EXISTS);
 
@@ -19,17 +19,18 @@ registerUser: async ({ email, password }) => {
   const otp = otpUtils.otp(6);
   const otpExpire = new Date(Date.now() + 10 * 60 * 1000);
 
-  await PendingUser.create({ email, password: hashed, otp, otpExpire });
+  await PendingUser.create({ name, email, password: hashed, otp, otpExpire });
+
   await otpUtils.sentOtp(email, otp);
 
-  // Generate a temporary token (only for verifying OTP)
   const token = jwt.sign({ email }, JWT_SECRET, { expiresIn: "15m" });
 
   return {
     message: RESPONSE.USER_REGISTERED,
-    token, // Return token to frontend
+    token,
   };
 },
+
 
 // verifyRegistrationOtp: async (token, otp) => {
 //   const decoded = jwt.verify(token, JWT_SECRET);
@@ -53,19 +54,23 @@ verifyRegistrationOtp: async (token, otp) => {
   const pending = await PendingUser.findOne({ email });
   if (!pending || pending.otp !== otp || pending.otpExpire < new Date())
     throw new Error(RESPONSE.OTP_INVALID);
+
   const referralCode = generateReferralCode(email);
+
   const user = await User.create({
+    name: pending.name,
     email,
     password: pending.password,
     isVerified: true,
     referralCode,
-    referredBy: pending.referredBy || null, // optional
+    referredBy: pending.referredBy || null,
   });
 
   await pending.deleteOne();
 
   return { message: RESPONSE.OTP_VERIFIED };
 },
+
   
 
  loginStep1: async ({ email, password }) => {

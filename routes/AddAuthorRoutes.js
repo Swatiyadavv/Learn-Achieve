@@ -4,6 +4,7 @@ const router = express.Router();
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const { protect } = require('../middleware/authMiddleware');
 const authorController = require('../controller/AddAuthorController');
 
 
@@ -37,10 +38,10 @@ const upload = multer({
 
 // http://localhost:5000/uploads/author/1752138969597.jpg --> for image url
 
-router.post('/add', upload.single('image'), authorController.addAuthor);
+router.post('/add', upload.single('image'),protect, authorController.addAuthor);
 // get with limit offset and search 
-router.get('/get', authorController.getAllAuthors);
-router.delete('/delete', authorController.deleteAuthorController);
-router.patch('/toggle/:id', authorController.toggleAuthorStatus);
+router.get('/get',protect, authorController.getAllAuthors);
+router.delete('/delete',protect, authorController.deleteAuthorController);
+router.patch('/toggle/:id',protect, authorController.toggleAuthorStatus);
 
 module.exports = router;

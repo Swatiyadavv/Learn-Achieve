@@ -10,7 +10,7 @@ const publicPackageRoutes = require('./routes/publicPackageRoutes');
 const cartRoutes = require('./routes/cartRoutes');
 const orderRoutes = require('./routes/orderRoutes');
 const classMasterRoutes = require('./routes/classMasterRoutes');
-const blogRoutes = require('./routes/blogRoutes')
+const blogCategoryRoutes = require("./routes/blogCategoryRoutes");
 const mockTestfetch = require('./routes/mockTestUserRoute')
 const subjectRoutes = require('./routes/subjectRoutes');
 const questionRoutes = require('./routes/questionRoute');
@@ -35,7 +35,7 @@ app.use('/api/order',orderRoutes);
 app.use('/api/cart', cartRoutes);
 app.use('/api/user', publicPackageRoutes); 
 app.use('/api/classMaster',classMasterRoutes)
-app.use('/api/blog', blogRoutes); 
+app.use("/api/blog", blogCategoryRoutes);
 app.use('/api/question',questionRoutes);
 app.use('/api/mockTestfetch', mockTestfetch);
 app.use('/api/subject', subjectRoutes);

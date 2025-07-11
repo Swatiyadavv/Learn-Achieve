@@ -1,21 +1,26 @@
 const mongoose = require("mongoose");
 
 const blogSchema = new mongoose.Schema({
-  category: {
+  SelectCategory: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "BlogCategory",
     required: true,
   },
-  author: {
+  AuthorName: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "Author", // or your User model
+    ref: "Author",
     required: true,
   },
-  title: {
+  Date: {
+    type: Date,
+    required: true,
+  },
+  BlogTitle: {
     type: String,
     required: true,
+    unique: true, // prevent duplicate blogs by title
   },
-  description: {
+  BriefIntro: {
     type: String,
     required: true,
   },
@@ -27,6 +32,14 @@ const blogSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
+  Details: {
+    type: String,
+    required: true,
+  },
+  isActive: {
+  type: Boolean,
+  default: true,
+},
 }, { timestamps: true });
 
 module.exports = mongoose.model("Blog", blogSchema);

@@ -1,33 +1,32 @@
 const Joi = require("joi");
+const mongoose = require("mongoose");
+exports.mockTestValidation = Joi.object({
+  id: Joi.string().optional(),
+  mockTestName: Joi.string().required(),
 
-exports.validateMainQuestion = Joi.object({
-  classId: Joi.string().required(),
-  subjectId: Joi.string().required(),
-  medium: Joi.string().required(),
-  module: Joi.string().required(),
-  topicName: Joi.string().required(),
-  typeOfQuestion: Joi.string().valid("General", "Comprehensive", "Poem").required(),
-  questionType: Joi.string().valid("Question Bank", "SAT Exam").required(),
+  medium: Joi.array()
+    .items(Joi.string().valid("Hindi", "English", "Semi-English", "Marathi"))
+    .required(),
 
-  // Required for all types now (General + Comprehensive + Poem)
-  questionText: Joi.string().required(),
+  class: Joi.array()
+    .items(Joi.string().custom((value, helpers) => {
+      if (!mongoose.Types.ObjectId.isValid(value)) {
+        return helpers.error("any.invalid");
+      }
+      return value;
+    }))
+    .required(),
 
-  // Only for General type
-  options: Joi.when("typeOfQuestion", {
-    is: "General",
-    then: Joi.array().items(Joi.string()).length(4).required(),
-    otherwise: Joi.forbidden()
-  }),
-  correctAnswer: Joi.when("typeOfQuestion", {
-    is: "General",
-    then: Joi.string().required(),
-    otherwise: Joi.forbidden()
-  }),
-});
+  duration: Joi.number().min(5).max(180).required(), //Max 180 minutes
+ subjects: Joi.array()
+    .items(Joi.string().custom((value, helpers) => {
+      if (!mongoose.Types.ObjectId.isValid(value)) {
+        return helpers.error("any.invalid");
+      }
+      return value;
+    }))
+    .required(),
+    totalQuestions: Joi.number().min(1).max(100).required(), //  Max 100 que
 
-exports.validateSubQuestion = Joi.object({
-  parentId: Joi.string().required(),
-  questionText: Joi.string().required(),
-  options: Joi.array().items(Joi.string()).length(4).required(),
-  correctAnswer: Joi.string().required()
+  status: Joi.string().valid("active", "inactive")
 });

@@ -15,6 +15,8 @@ const mockTestfetch = require('./routes/mockTestUserRoute')
 const subjectRoutes = require('./routes/subjectRoutes');
 const questionRoutes = require('./routes/questionRoute');
 const authorRoutes = require('./routes/AddAuthorRoutes');
+const blogRoutes = require("./routes/blogRoutes");
+
 const cors = require('cors')
 dotenv.config();
 const app = express();
@@ -40,6 +42,8 @@ app.use('/api/question',questionRoutes);
 app.use('/api/mockTestfetch', mockTestfetch);
 app.use('/api/subject', subjectRoutes);
 app.use('/api/author', authorRoutes);
+app.use("/api/AddBlogs", blogRoutes);
+
 
 
 const PORT = process.env.PORT || 5000;

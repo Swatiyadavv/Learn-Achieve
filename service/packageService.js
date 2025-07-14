@@ -12,6 +12,7 @@ const packageService = {
       id,
       packageName,
       className,
+      SelectClass, // added
       medium,
       mockTests,
       numberOfAttempts,
@@ -41,6 +42,7 @@ const packageService = {
 
       pkg.packageName = packageName;
       pkg.className = className;
+      pkg.SelectClass = SelectClass; // added
       pkg.medium = medium;
       pkg.mockTests = Array.isArray(mockTests)
         ? mockTests
@@ -74,6 +76,7 @@ const packageService = {
       const newPackage = new Package({
         packageName,
         className,
+        SelectClass, // added
         medium,
         mockTests: Array.isArray(mockTests)
           ? mockTests
@@ -135,6 +138,7 @@ const packageService = {
     const fields = [
       'packageName',
       'className',
+      'SelectClass', // added
       'medium',
       'numberOfAttempts',
       'platform',
@@ -222,39 +226,47 @@ const packageService = {
 
     await Package.deleteMany({ _id: { $in: ids } });
   },
+
+  /**
+   * Get Filtered Paginated Packages
+   */
   getFilteredPaginatedPackages: async (searchQuery, limit, offset) => {
-  const filter = {
-    isActive: true,
-  };
-
-  if (searchQuery && searchQuery.trim() !== '') {
-    filter.packageName = {
-      $regex: `^${searchQuery.trim()}`,
-      $options: 'i',
+    const filter = {
+      isActive: true,
     };
-  }
 
-  const total = await Package.countDocuments(filter);
+    if (searchQuery && searchQuery.trim() !== '') {
+      filter.packageName = {
+        $regex: `^${searchQuery.trim()}`,
+        $options: 'i',
+      };
+    }
 
-  const packages = await Package.find(filter)
-    .skip(offset)
-    .limit(limit)
-    .sort({ createdAt: -1 });
+    const total = await Package.countDocuments(filter);
 
-  const enriched = packages.map(pkg => ({
-    ...pkg.toObject(),
-    availableMockTests: Array.isArray(pkg.mockTests) ? pkg.mockTests.length : 0,
-  }));
+    const packages = await Package.find(filter)
+      .skip(offset)
+      .limit(limit)
+      .sort({ createdAt: -1 });
 
-  return {
-    total,
-    count: enriched.length,
-    packages: enriched,
-    nextOffset: offset + limit < total ? offset + limit : null,
-    prevOffset: offset - limit >= 0 ? offset - limit : null,
-  };
-},
- togglePackageStatus: async (id) => {
+    const enriched = packages.map(pkg => ({
+      ...pkg.toObject(),
+      availableMockTests: Array.isArray(pkg.mockTests) ? pkg.mockTests.length : 0,
+    }));
+
+    return {
+      total,
+      count: enriched.length,
+      packages: enriched,
+      nextOffset: offset + limit < total ? offset + limit : null,
+      prevOffset: offset - limit >= 0 ? offset - limit : null,
+    };
+  },
+
+  /**
+   * Toggle Package Active/Inactive
+   */
+  togglePackageStatus: async (id) => {
     const pkg = await Package.findById(id);
     if (!pkg) {
       throw new Error('Package not found');
@@ -268,7 +280,6 @@ const packageService = {
       package: pkg,
     };
   },
+};
 
-
-}
 module.exports = packageService;

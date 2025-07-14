@@ -18,7 +18,6 @@ const orderController = {
         return res.status(400).json({ message: 'packageIds array is required' });
       }
 
-      // Agar ek hi packageId form-urlencoded mein aaye to use array bana do
       if (!Array.isArray(packageIds)) {
         packageIds = [packageIds];
       }
@@ -31,17 +30,15 @@ const orderController = {
     }
   },
 
-   getInvoiceByOrderId : async (req, res) => {
+  getInvoiceByOrderId: async (req, res) => {
   try {
     const { orderId } = req.params;
-
     const invoice = await orderService.getInvoiceByOrderId(orderId);
     res.status(200).json({ message: 'Invoice generated successfully', invoice });
-
   } catch (err) {
     res.status(404).json({ message: err.message });
   }
-   }
+}
 };
 
 module.exports = orderController;

@@ -38,7 +38,7 @@ const addToCart = async (userId, packageId) => {
     platform: pkg.platform,
     medium: pkg.medium,
     image: pkg.image,
-    actualPrice,             // ✅ Added
+    actualPrice,             // Added
     finalPrice,
     discountPrice,
     quantity: 1,
@@ -75,6 +75,8 @@ const addToCart = async (userId, packageId) => {
       image: item.image,
       finalPrice: item.finalPrice,
       quantity: item.quantity,
+    discountPrice: item.discountPrice, 
+
       totalPrice: item.totalPrice
     })),
     summary: cart.summary
@@ -107,6 +109,8 @@ const getUserCart = async (userId) => {
     finalPrice: item.finalPrice,
     quantity: item.quantity,
     totalPrice: item.totalPrice,
+    discountPrice: item.discountPrice, 
+
   }));
 
   const summary = calculateSummary(cart.packages);
@@ -143,6 +147,8 @@ const removeFromCart = async (userId, packageId) => {
     image: item.image,
     finalPrice: item.finalPrice,
     quantity: item.quantity,
+    discountPrice: item.discountPrice, 
+
     totalPrice: item.totalPrice,
   }));
 
@@ -178,6 +184,7 @@ const removeMultipleFromCart = async (userId, packageIds) => {
     finalPrice: item.finalPrice,
     quantity: item.quantity,
     totalPrice: item.totalPrice,
+    discountPrice: item.discountPrice, 
   }));
 
   return {

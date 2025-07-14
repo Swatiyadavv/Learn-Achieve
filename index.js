@@ -16,6 +16,8 @@ const subjectRoutes = require('./routes/subjectRoutes');
 const questionRoutes = require('./routes/questionRoute');
 const authorRoutes = require('./routes/AddAuthorRoutes');
 const blogRoutes = require("./routes/blogRoutes");
+const invoiceRoutes = require('./routes/invoiceRoutes');
+
 
 const cors = require('cors')
 dotenv.config();
@@ -43,6 +45,7 @@ app.use('/api/mockTestfetch', mockTestfetch);
 app.use('/api/subject', subjectRoutes);
 app.use('/api/author', authorRoutes);
 app.use("/api/AddBlogs", blogRoutes);
+app.use('/api/invoice', invoiceRoutes);
 
 
 

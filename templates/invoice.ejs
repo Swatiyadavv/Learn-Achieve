@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Invoice</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+        }
+
+        .header img {
+            height: 60px;
+        }
+
+        .title {
+            text-align: center;
+            font-size: 20px;
+            margin-top: 10px;
+            font-weight: bold;
+        }
+
+        .company-info {
+            text-align: center;
+            margin-top: 5px;
+        }
+
+        .info-table {
+            width: 100%;
+            margin-top: 20px;
+            font-size: 14px;
+        }
+
+        .info-table td {
+            padding: 4px 0;
+        }
+
+        .billing-shipping {
+            float: right;
+            font-size: 14px;
+            text-align: right;
+        }
+
+        .tax-title {
+            margin-top: 40px;
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .details-table {
+            width: 100%;
+            margin-top: 10px;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+
+        .details-table th {
+            background-color: #f26c21;
+            color: white;
+            padding: 8px;
+            text-align: left;
+        }
+
+        .details-table td {
+            padding: 8px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .details-table td:last-child {
+            text-align: right;
+        }
+
+        .summary-row {
+            font-weight: bold;
+            background-color: #f9f9f9;
+        }
+
+        .notice {
+            margin-top: 40px;
+            font-size: 13px;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">
+        <img src="https://i.ibb.co/FW98ChV/logo.png" alt="Learn and Achieve">
+    </div>
+
+    <div class="title">INVOICE</div>
+
+    <div class="company-info">
+        <strong>Pradnya Learn and Achieve Pvt Ltd.</strong><br>
+        GSTIN - 27AAOCP3526D1ZE CIN - U85499MH2023PTC416277
+    </div>
+
+    <table class="info-table">
+        <tr>
+            <td><strong>Order Id :</strong> <%= orderId || '' %></td>
+            <td><strong>Order Date :</strong> <%= new Date(orderDate).toLocaleDateString() %></td>
+            <td><strong>Amount :</strong> ₹<%= summary.grandTotal %></td>
+        </tr>
+    </table>
+
+    <div class="billing-shipping">
+        <strong>BILLING ADDRESS</strong><br>Madhya Pradesh, India<br><br>
+        <strong>SHIPPING ADDRESS</strong><br>Madhya Pradesh, India
+    </div>
+
+    <div style="clear: both;"></div>
+
+    <div class="tax-title">TAX INVOICE</div>
+
+    <table class="details-table">
+        <thead>
+            <tr>
+                <th>Description</th>
+                <th>Package Name</th>
+                <th>Amount</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% cartList.forEach((item, index) => { %>
+                <tr>
+                    <td>Package <%= index + 1 %></td>
+                    <td><%= item.name.join(', ') %></td>
+                    <td>₹<%= item.originalPrice.toFixed(2) %></td>
+                </tr>
+            <% }); %>
+
+            <!-- Summary rows below package list -->
+            <tr class="summary-row">
+                <td></td>
+                <td>Item Total</td>
+                <td>₹<%= summary.originalTotal %></td>
+            </tr>
+            <tr class="summary-row">
+                <td></td>
+                <td>Discount</td>
+                <td>₹<%= summary.discountAmt %></td>
+            </tr>
+            <tr class="summary-row">
+                <td></td>
+                <td>Grand Total</td>
+                <td>₹<%= summary.grandTotal %></td>
+            </tr>
+        </tbody>
+    </table>
+
+    <div class="notice">
+        <strong>NOTICE:</strong><br>
+        This is computer generated receipt and does not require physical signature.
+    </div>
+
+</body>
+</html>

@@ -130,15 +130,16 @@ exports.getCoordinators = async (req, res) => {
 };
 
 // Toggle Active Status
+
 exports.toggleCoordinator = async (req, res) => {
   try {
-    const { _id } = req.body;
+    const { id } = req.params;
 
-    if (!_id) {
-      return res.status(400).json({ message: "_id is required" });
+    if (!id) {
+      return res.status(400).json({ message: "ID is required" });
     }
 
-    const updated = await coordinatorService.toggleStatus(_id);
+    const updated = await coordinatorService.toggleStatus(id);
     if (!updated) {
       return res.status(404).json({ message: "Coordinator not found" });
     }

@@ -3,13 +3,14 @@ const router = express.Router();
 const coordinatorController = require('../controller/coordinatorController');
 
 // Routes
-router.post('/', coordinatorController.addOrUpdateCoordinator);
+router.post('/add', coordinatorController.addOrUpdateCoordinator);
 
-router.get('/', coordinatorController.getCoordinators);
+router.get('/get', coordinatorController.getCoordinators);
 
-router.delete('/', coordinatorController.deleteCoordinator);
+router.delete('/delete', coordinatorController.deleteCoordinator);
 
-router.patch('/toggle', coordinatorController.toggleCoordinator);
+router.patch('/toggle/:id', coordinatorController.toggleCoordinator);
+
 
 
 module.exports = router;

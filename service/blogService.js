@@ -13,12 +13,16 @@ exports.updateBlog = async (id, data) => {
 exports.getAllBlogs = async ({ search, limit, offset }) => {
   const query = {};
 
-  // 🔍 Starts with search on BlogTitle
   if (search) {
-    query.BlogTitle = {
-      $regex: "^" + search, // search must start with input
-      $options: "i",         // case-insensitive
-    };
+    // Escape special regex characters for safety
+    const escapedSearch = search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+    // Match anywhere in BlogTitle, BriefIntro, or AuthorName
+    query.$or = [
+      { BlogTitle: { $regex: escapedSearch, $options: "i" } },
+      { BriefIntro: { $regex: escapedSearch, $options: "i" } },
+      { AuthorName: { $regex: escapedSearch, $options: "i" } },
+    ];
   }
 
   const blogs = await Blog.find(query)
@@ -30,6 +34,7 @@ exports.getAllBlogs = async ({ search, limit, offset }) => {
 
   return { blogs, total };
 };
+
 
 
 

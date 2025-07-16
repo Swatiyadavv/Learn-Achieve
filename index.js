@@ -19,6 +19,7 @@ const authorRoutes = require('./routes/AddAuthorRoutes');
 const blogRoutes = require("./routes/blogRoutes");
 const invoiceRoutes = require('./routes/invoiceRoutes');
 const studentRoutes = require("./routes/studentRoutes");
+const coordinatorRoutes = require('./routes/coordinatorRoutes');
 
 
 const cors = require('cors')
@@ -49,7 +50,7 @@ app.use('/api/author', authorRoutes);
 app.use("/api/AddBlogs", blogRoutes);
 app.use('/api/invoice', invoiceRoutes);
 app.use('/api/student',studentRoutes);
-
+app.use('/api/coordinators', coordinatorRoutes);
 
 
 const PORT = process.env.PORT || 5000;

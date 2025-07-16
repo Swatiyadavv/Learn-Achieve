@@ -2,6 +2,7 @@ const express = require("express");
 const path = require('path');         
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
+dotenv.config();
 const adminRoutes = require("./routes/adminRoutes");
 const mockTestRoutes = require('./routes/mockTestRoutes')
 const packageRoutes = require('./routes/packageRoutes');
@@ -17,10 +18,11 @@ const questionRoutes = require('./routes/questionRoute');
 const authorRoutes = require('./routes/AddAuthorRoutes');
 const blogRoutes = require("./routes/blogRoutes");
 const invoiceRoutes = require('./routes/invoiceRoutes');
+const studentRoutes = require("./routes/studentRoutes");
 
 
 const cors = require('cors')
-dotenv.config();
+
 const app = express();
 app.use(express.json());
 app.use(cors());
@@ -46,6 +48,7 @@ app.use('/api/subject', subjectRoutes);
 app.use('/api/author', authorRoutes);
 app.use("/api/AddBlogs", blogRoutes);
 app.use('/api/invoice', invoiceRoutes);
+app.use('/api/student',studentRoutes);
 
 
 

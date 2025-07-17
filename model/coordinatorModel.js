@@ -10,7 +10,7 @@ const coordinatorSchema = new mongoose.Schema({
   match: /^\d{4}-\d{2}-\d{2}$/ 
 },
   qualification: { type: String },
-  addressLine1: { type: String },
+  addressLine1: { type: String ,required:true},
   addressLine2: { type: String },
   state: { type: String },
   district: { type: String },

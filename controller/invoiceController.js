@@ -27,7 +27,7 @@ exports.generateInvoice = async (req, res) => {
 
             cartList.push({
                 package_id: item.packageId,
-                name: pkg?.name || [],
+                name: pkg?.packageName || [],
                 platform: pkg?.platform || '',
                 medium: pkg?.medium || '',
                 image: pkg?.image || '',

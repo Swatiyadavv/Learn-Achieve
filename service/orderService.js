@@ -2,7 +2,7 @@ const Cart = require('../model/Cart');
 const Package = require('../model/Package');
 const Order = require('../model/Order');
 const moment = require('moment');
-
+const crypto = require('crypto');
 const placeOrderFromCart = async (userId) => {
   const cart = await Cart.findOne({ userId }).populate('packages.packageId');
   if (!cart || cart.packages.length === 0) {
@@ -133,9 +133,34 @@ const getInvoiceByOrderId = async (orderId) => {
 
   return invoice;
 };
+const getAllOrdersByUserId = async (userId) => {
+  const orders = await Order.find({ userId })
+    .populate('packages.packageId')
+    .sort({ createdAt: -1 });
+
+  const formattedOrders = orders.map((order, index) => {
+    const formattedOrderId = `ORD-${moment(order.createdAt).format('YYYYMMDD')}-${order._id.toString().slice(-6).toUpperCase()}`;
+
+    // Transaction ID (Random, persistent in memory)
+    const transactionId = `TXN-${moment(order.createdAt).format('YYYYMMDD')}-${crypto.randomBytes(5).toString('hex')}`;
+
+    return {
+      srNo: index + 1,
+      orderId: formattedOrderId,
+      packageName: order.packages[0]?.packageId?.packageName || 'N/A',
+      dateTime: moment(order.createdAt).format('DD MMM, YYYY'),
+      transactionId,
+      amount: order.totalAmount,
+      invoice: "" // or your frontend route
+    };
+  });
+
+  return formattedOrders;
+};
 
 module.exports = {
   placeOrderFromCart,
   placeOrderWithSelectedPackages,
-  getInvoiceByOrderId
+  getInvoiceByOrderId,
+  getAllOrdersByUserId
 };

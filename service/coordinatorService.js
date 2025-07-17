@@ -1,8 +1,9 @@
 const Coordinator = require('../model/coordinatorModel');
-
+const generateUniqueCode = require('../utils/generateCode');
 
 exports.createCoordinator = async (data) => {
-  const coordinator = new Coordinator(data);
+  const uniqueCode = await generateUniqueCode(); 
+  const coordinator = new Coordinator({ ...data, uniqueCode }); 
   return await coordinator.save();
 };
 

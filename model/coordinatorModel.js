@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 
 const coordinatorSchema = new mongoose.Schema({
-  name: { type: String, required: true },
+  name: { type: String, required: true ,  lowercase: true,trim: true},
   emailId: { type: String, required: true, unique: true },
   mobileNo: { type: String, required: true },
   dob: {
@@ -15,6 +15,8 @@ const coordinatorSchema = new mongoose.Schema({
   state: { type: String },
   district: { type: String },
   taluka: { type: String },
+  uniqueCode: { type: String, required: true, unique: true },
+
   pincode: { type: String },
   isActive: {
     type: Boolean,

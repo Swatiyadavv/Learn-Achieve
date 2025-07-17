@@ -1,20 +1,19 @@
 const coordinatorService = require('../service/coordinatorService');
-
+const generateUniqueCode = require('../utils/generateCode');
 // Format date to YYYY-MM-DD
 const formatDate = (date) => {
   return new Date(date).toISOString().split('T')[0];
 };
 
-// Add or Update Coordinator
 exports.addOrUpdateCoordinator = async (req, res) => {
   try {
     const data = req.body;
 
-    // Format dob to YYYY-MM-DD string if exists
+    // Format DOB if needed
     if (data.dob) {
       const dateObj = new Date(data.dob);
       if (!isNaN(dateObj)) {
-        data.dob = dateObj.toISOString().split('T')[0]; // ← this is key
+        data.dob = dateObj.toISOString().split('T')[0];
       } else {
         return res.status(400).json({ message: "Invalid DOB format" });
       }
@@ -22,15 +21,19 @@ exports.addOrUpdateCoordinator = async (req, res) => {
 
     let result;
     if (data._id) {
+      // Prevent uniqueCode from being overwritten
+      delete data.uniqueCode;
+
       result = await coordinatorService.updateCoordinator(data._id, data);
       if (!result) return res.status(404).json({ message: "Coordinator not found" });
     } else {
+      // Auto-generate uniqueCode inside service
       result = await coordinatorService.createCoordinator(data);
     }
 
     const response = {
       ...result._doc,
-      dob: formatDate(result.dob) // for clean UI response
+      dob: formatDate(result.dob), // clean date
     };
 
     res.status(200).json({
@@ -42,6 +45,7 @@ exports.addOrUpdateCoordinator = async (req, res) => {
     res.status(500).json({ message: error.message });
   }
 };
+
 
 
 // Delete Single or Multiple
@@ -156,3 +160,4 @@ exports.toggleCoordinator = async (req, res) => {
     res.status(500).json({ message: "Error toggling coordinator", error: error.message });
   }
 };
+

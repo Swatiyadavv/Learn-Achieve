@@ -19,10 +19,10 @@ exports.addOrUpdateBlog = async (req, res) => {
       return res.status(400).json({ message: "All fields are required" });
     }
 
-    // ✅ Convert plain text to HTML first
+    //  Convert plain text to HTML first
     const htmlDetails = convertToHTML(Details);
 
-    // ✅ Then sanitize that HTML
+    // Then sanitize that HTML
     const safeDetails = sanitizeHtml(htmlDetails, {
       allowedTags: sanitizeHtml.defaults.allowedTags.concat([
         "img", "video", "iframe", "span", "h1", "h2", "h3", "u", "b", "i", "p", "br"
@@ -34,7 +34,7 @@ exports.addOrUpdateBlog = async (req, res) => {
       disallowedTagsMode: 'discard'
     });
 
-    // ✅ Handle images if uploaded
+    // Handle images if uploaded
     let featuredImage, mainImage;
     if (req.files?.featuredImage) {
       featuredImage = req.files.featuredImage[0].filename;
@@ -57,7 +57,7 @@ exports.addOrUpdateBlog = async (req, res) => {
 
     let blog;
 
-    // ✅ UPDATE existing blog
+    //  UPDATE existing blog
     if (id) {
       blog = await blogService.updateBlog(id, blogData);
       if (!blog) return res.status(404).json({ message: "Blog not found" });
@@ -68,7 +68,7 @@ exports.addOrUpdateBlog = async (req, res) => {
       });
     }
 
-    // ✅ CREATE new blog
+    // CREATE new blog
     if (!featuredImage || !mainImage) {
       return res.status(400).json({ message: "Both images are required for new blog" });
     }

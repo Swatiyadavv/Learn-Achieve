@@ -9,7 +9,7 @@ router.post("/add", upload.fields([
   { name: "mainImage", maxCount: 1 }
 ]), protect,blogController.addOrUpdateBlog);
 
-router.get("/", protect,blogController.getAllBlogs);
+router.get("/",protect,blogController.getAllBlogs);
 
 router.patch("/status/:id",protect, blogController.toggleBlogStatus);
 

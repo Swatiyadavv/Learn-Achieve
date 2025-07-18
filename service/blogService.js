@@ -50,5 +50,17 @@ exports.deleteBlogById = async (id) => {
 };
 
 exports.deleteMultipleBlogs = async (ids) => {
-  return await Blog.deleteMany({ _id: { $in: ids } });
+  return await Blog.deleteMany({ _id: { $in: ids } 
+  });
 };
+// service/blogService.js
+
+exports.getBlogsByCategory = async (categoryId) => {
+  return await Blog.find({ SelectCategory: categoryId, isActive: true }) // optional: filter only active blogs
+    .populate("AuthorName", "name -_id")
+    .populate("SelectCategory", "name -_id") // if category name is needed
+    .sort({ createdAt: -1 });
+};
+
+
+

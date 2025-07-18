@@ -173,4 +173,31 @@ exports.deleteBlog = async (req, res) => {
     console.error(" Delete Blog Error:", error);
     res.status(500).json({ message: "Server Error" });
   }
+
+};
+// controller/blogController.js
+
+exports.getBlogsByCategory = async (req, res) => {
+  try {
+    const { categoryId } = req.params;
+
+    if (!categoryId) {
+      return res.status(400).json({ message: "Category ID is required" });
+    }
+
+    const blogs = await blogService.getBlogsByCategory(categoryId);
+
+    if (!blogs.length) {
+      return res.status(404).json({ message: "No blogs found for this category" });
+    }
+
+    res.status(200).json({
+      message: "Blogs fetched successfully",
+      total: blogs.length,
+      data: blogs,
+    });
+  } catch (error) {
+    console.error("Error fetching blogs by category:", error);
+    res.status(500).json({ message: "Server error" });
+  }
 };

@@ -18,20 +18,23 @@ const orderController = {
   },
 
   // Get all orders by user ID
-  getAllOrdersByUserId: async (req, res) => {
-    try {
-      const userId = req.user.id;
+getAllOrdersByUserId: async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const page = parseInt(req.query.page) || 1;  // Default to page 1
+    const limit = parseInt(req.query.limit) || 10; // Default limit to 10
 
-      if (!userId) {
-        return res.status(400).json({ message: 'User ID not found in request' });
-      }
-
-      const orders = await orderService.getAllOrdersByUserId(userId);
-      res.status(200).json({ message: 'Orders fetched successfully', orders });
-    } catch (err) {
-      res.status(500).json({ message: err.message });
+    if (!userId) {
+      return res.status(400).json({ message: 'User ID not found in request' });
     }
-  },
+
+    const orders = await orderService.getAllOrdersByUserId(userId, page, limit);
+    res.status(200).json({ message: 'Orders fetched successfully', page, limit, orders });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+},
+
 
   //  Place order with selected packageIds
   placeOrderWithSelectedPackages: async (req, res) => {

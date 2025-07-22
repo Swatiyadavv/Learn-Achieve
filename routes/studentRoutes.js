@@ -2,8 +2,9 @@ const express = require("express");
 const router = express.Router();
 const studentController = require("../controller/studentController");
 
-router.post("/register", studentController.addPersonalDetails);
-router.post("/contact", studentController.addContactDetails);
+// router.post("/register", studentController.addPersonalDetails);
+router.post("/register", studentController.addStudentDetails);
+// router.post("/contact", studentController.addContactDetails);
 router.post("/verify", studentController.verifyOtpAndRegister);
 
 //login

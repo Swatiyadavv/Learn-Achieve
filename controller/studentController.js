@@ -16,6 +16,17 @@ exports.addPersonalDetails = async (req, res) => {
     res.status(400).json({ error: err.message });
   }
 };
+// In studentController.js
+
+exports.addStudentDetails = async (req, res) => {
+  try {
+    const result = await studentService.addStudentDetails(req.body);
+    res.status(200).json(result);
+  } catch (err) {
+    res.status(400).json({ error: err.message });
+  }
+};
+
 
 // ✅ Add Contact Details
 exports.addContactDetails = async (req, res) => {

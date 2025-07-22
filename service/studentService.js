@@ -26,6 +26,7 @@ exports.addContactDetails = async (data) => {
     throw new Error("Coordinator must provide a unique code before adding contact details");
   }
 
+  // Check if state is Madhya Pradesh
   if (state === "Madhya Pradesh") {
     if (!district || !taluka || !pinCode) {
       throw new Error("District, taluka, and pin code are required for Madhya Pradesh");
@@ -35,11 +36,13 @@ exports.addContactDetails = async (data) => {
     student.taluka = taluka;
     student.pinCode = pinCode;
   } else {
+    // If state is not Madhya Pradesh, clear district, taluka, and pinCode
     student.district = undefined;
     student.taluka = undefined;
     student.pinCode = undefined;
   }
 
+  // Generate OTP
   const generatedOtp = otp();
   const otpExpiresAt = new Date(Date.now() + 5 * 60 * 1000);
 
@@ -52,6 +55,10 @@ exports.addContactDetails = async (data) => {
   student.otpExpiresAt = otpExpiresAt;
 
   await student.save();
+
+  // Log OTP to console
+  console.log(`Generated OTP for ${email}: ${generatedOtp}`);
+
   await sentOtp(email, generatedOtp);
 
   return {
@@ -70,18 +77,111 @@ exports.addContactDetails = async (data) => {
   };
 };
 
+
+
+exports.addStudentDetails = async (data) => {
+  const {
+    firstName,
+    middleName,
+    lastName,
+    dob,
+    gender,
+    medium,
+    class: studentClass,
+    schoolName,
+    registerBy,
+    uniqueCode,
+    email,
+    mobile,
+    addressLine1,
+    addressLine2,
+    state,
+    district,
+    taluka,
+    pinCode,
+  } = data;
+
+  // Step 1: Add personal details
+  const newStudent = await PendingStudent.create({
+    firstName,
+    middleName,
+    lastName,
+    dob: new Date(dob),
+    gender,
+    medium,
+    class: studentClass,
+    schoolName,
+    registerBy,
+    uniqueCode: registerBy === "Coordinator" ? uniqueCode : undefined,
+    email,
+    mobile,
+    addressLine1,
+    addressLine2,
+    state,
+    district,
+    taluka,
+    pinCode,
+  });
+
+  // Step 2: Generate OTP
+  const otp = generateOTP(); // Generate a 6-digit OTP
+  const otpExpiresAt = new Date(Date.now() + 5 * 60 * 1000); // Set expiration time for OTP
+  newStudent.otp = otp; // Save OTP in the PendingStudent document
+  newStudent.otpExpiresAt = otpExpiresAt; // Save expiration time
+  await newStudent.save(); // Save the updated PendingStudent document
+
+  // Step 3: Send OTP to email
+  const subject = "Your OTP for Verification";
+  const message = `Your OTP for verification is: ${otp}`;
+  await sendMail(email, message, subject); // Send OTP to the user's email
+
+  // Log OTP to console
+  console.log(`Generated OTP for ${email}: ${otp}`);
+
+  return {
+    message: "Student details saved. OTP sent to email for verification.",
+    pendingStudent: {
+      _id: newStudent._id,
+      firstName: newStudent.firstName,
+      middleName: newStudent.middleName,
+      lastName: newStudent.lastName,
+      dob: newStudent.dob.toISOString().split("T")[0],
+      gender: newStudent.gender,
+      medium: newStudent.medium,
+      class: newStudent.class,
+      schoolName: newStudent.schoolName,
+      registerBy: newStudent.registerBy,
+      uniqueCode: newStudent.uniqueCode || undefined,
+      email: newStudent.email,
+      mobile: newStudent.mobile,
+      addressLine1: newStudent.addressLine1,
+      addressLine2: newStudent.addressLine2,
+      state: newStudent.state,
+      district: newStudent.district,
+      taluka: newStudent.taluka,
+      pinCode: newStudent.pinCode,
+    },
+  };
+};
+
+
+
+
 exports.verifyOtpAndRegister = async (pendingStudentId, otp) => {
   const pending = await PendingStudent.findById(pendingStudentId);
   if (!pending) throw new Error("Pending student not found");
 
+  // Check if OTP is valid and not expired
   if (pending.otp !== otp || pending.otpExpiresAt < Date.now()) {
     throw new Error("Invalid or expired OTP");
   }
 
+  // Generate a password for the student
   const plainPassword = generatePassword();
-  console.log("Generated Password for Student:", plainPassword);
+  console.log("Generated Password for Student:", plainPassword); // Log the generated password
   const hashedPassword = await bcrypt.hash(plainPassword, 10);
 
+  // Create a new Student document
   const student = new Student({
     firstName: pending.firstName,
     middleName: pending.middleName,
@@ -105,13 +205,13 @@ exports.verifyOtpAndRegister = async (pendingStudentId, otp) => {
     }
   });
 
-  await student.save();
-  await PendingStudent.findByIdAndDelete(pendingStudentId);
+  await student.save(); // Save the new Student document
+  await PendingStudent.findByIdAndDelete(pendingStudentId); // Remove from PendingStudent
 
+  // Send the generated password to the student's email
   const subject = "Registration Successful - Login Credentials";
   const message = `Dear ${student.firstName},\n\nYou have been successfully registered.\nYour login password is: ${plainPassword}\n\nKeep it safe.\n\nRegards,\nTeam`;
-
-  await sentOtp(student.contactDetails.email, message, subject);
+  await sendMail(student.contactDetails.email, message, subject);
 
   return {
     message: "Student registered successfully",
@@ -121,6 +221,8 @@ exports.verifyOtpAndRegister = async (pendingStudentId, otp) => {
     }
   };
 };
+
+
 
 exports.addPersonalDetails = async (data) => {
   const {

@@ -189,6 +189,7 @@ exports.loginStudent = async (email, password) => {
   };
 };
 
+
 // Step 1: Request OTP after verifying password
 exports.requestLoginOtp = async (email, password) => {
   const student = await Student.findOne({ "contactDetails.email": email });

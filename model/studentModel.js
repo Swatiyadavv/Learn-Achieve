@@ -1,3 +1,4 @@
+
 const mongoose = require('mongoose');
 
 const studentSchema = new mongoose.Schema({
@@ -19,12 +20,17 @@ const studentSchema = new mongoose.Schema({
     state: String,
     district: String,
     taluka: String,
-    pinCode: String,
-    otp: { type: String },
-otpExpiry: { type: Date },
-
+    pinCode: String
   },
-  password: String // hashed password
+  password: String, // hashed password
+
+  // ✅ Move these here (at root level)
+  otp: {
+    type: String,
+  },
+  otpExpiry: {
+    type: Date,
+  }
 }, { timestamps: true });
 
 module.exports = mongoose.model("Student", studentSchema);

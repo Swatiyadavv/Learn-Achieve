@@ -1,123 +1,3 @@
-
-// const PendingStudent = require("../model/PendingStudent");
-// const Student = require("../model/studentModel");
-// const generateOTP = require("../utils/generateOtp");
-// const generatePassword = require("../utils/passwordUtils");
-// const sendMail = require("../utils/sendMail");
-// const bcrypt = require("bcrypt");
-// const jwt = require("jsonwebtoken");
-
-// // Register Student (saves to PendingStudent and sends OTP)
-// exports.registerStudent = async (data) => {
-//   const { email, mobile } = data.contactDetails || {};
-
-//   if (!email || !mobile) {
-//     throw new Error("Email and mobile are required.");
-//   }
-
-//   const otp = generateOTP();
-//   const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
-
-//   //  Remove old pending entry with same email
-//   await PendingStudent.findOneAndDelete({ "contactDetails.email": email });
-
-//   await PendingStudent.create({
-//     ...data,
-//     otp,
-//     otpExpiry,
-//   });
-
-//   console.log("OTP Generated:", otp);
-
-//   await sendMail(
-//     email,
-//     "Student OTP Verification - Smart School",
-//     `<h2>Your OTP is: ${otp}</h2><p>Valid for 10 minutes.</p>`
-//   );
-
-//   return { message: "OTP sent to email" };
-// };
-
-// //  Verify OTP and move student to final Student model
-// exports.verifyStudentOTP = async (email, otp) => {
-//   const pending = await PendingStudent.findOne({ "contactDetails.email": email });
-
-//   if (!pending) throw new Error("Student not found or already verified");
-
-//   console.log("Entered OTP:", otp);
-//   console.log("Stored OTP:", pending.otp);
-//   console.log("OTP Expiry:", pending.otpExpiry);
-
-//   //OTP validation
-//   if (pending.otp !== otp.toString() || pending.otpExpiry < new Date()) {
-//     throw new Error("Invalid or expired OTP");
-//   }
-
-//   const { mobile } = pending.contactDetails || {};
-//   if (!mobile) {
-//     throw new Error("Mobile number missing in pending student data");
-//   }
-
-//   // ❌ Prevent duplicate student by mobile
-//   const existingStudent = await Student.findOne({ "contactDetails.mobile": mobile });
-//   if (existingStudent) {
-//     throw new Error("A student with this mobile number already exists.");
-//   }
-
-//   //  Generate & hash password
-//   const rawPassword = generatePassword();
-//   const hashedPassword = await bcrypt.hash(rawPassword, 10);
-//   console.log("Generated Password:", rawPassword);
-
-//   //  Copy data & cleanup
-//   const studentData = pending.toObject();
-//   delete studentData._id;
-//   delete studentData.otp;
-//   delete studentData.otpExpiry;
-
-//   //  Save student
-//   await Student.create({
-//     ...studentData,
-//     password: hashedPassword,
-//   });
-
-//   await PendingStudent.deleteOne({ _id: pending._id });
-
-//   //  Send password
-//   await sendMail(
-//     email,
-//     "Your Smart School Password",
-//     `<h2>Your password is: ${rawPassword}</h2><p>Please use this to login.</p>`
-//   );
-
-//   return { message: "Student verified and password sent to email" };
-// };
-
-// exports.loginStudent = async (email, password) => {
-//   const student = await Student.findOne({ "contactDetails.email": email });
-
-//   if (!student) {
-//     console.log("❌ Email not found:", email);
-//     throw new Error("Invalid email or password");
-//   }
-
-//   console.log("🔑 Stored Hashed Password:", student.password);
-//   console.log("🔐 Entered Password:", password);
-
-//   const isMatch = await bcrypt.compare(password, student.password);
-//   console.log("🔍 Password Match:", isMatch);
-
-//   if (!isMatch) {
-//     throw new Error("Invalid email or password");
-//   }
-
-//   const token = jwt.sign({ id: student._id }, process.env.JWT_SECRET, {
-//     expiresIn: "1d",
-//   });
-
-//   return { token, student };
-// };
-
 const PendingStudent = require("../model/PendingStudent");
 const Student = require("../model/studentModel");
 const generateOTP = require("../utils/generateOtp");
@@ -126,43 +6,42 @@ const sendMail = require("../utils/sendMail");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
-// ✅ Register Student (step 1) - store in PendingStudent
+// ✅ Register Student - Step 1
 exports.registerStudent = async (data) => {
   const { email, mobile } = data.contactDetails || {};
-  if (!email || !mobile) throw new Error("Email and mobile are required.");
+  if (!email || !mobile) throw new Error("Email and mobile number are required.");
 
-  const otp = generateOTP();
-  const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 mins
-
-  // Remove old pending entry
+  // Remove old pending registration if exists
   await PendingStudent.findOneAndDelete({ "contactDetails.email": email });
+
+  const otp = generateOTP().toString();
+  const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
   await PendingStudent.create({ ...data, otp, otpExpiry });
 
-  console.log("OTP Generated:", otp);
   await sendMail(
     email,
     "Student OTP Verification - Smart School",
-    `<h2>Your OTP is: ${otp}</h2><p>Valid for 10 minutes.</p>`
+    `<h2>Your OTP is: ${otp}</h2><p>It is valid for 10 minutes.</p>`
   );
 
-  return { message: "OTP sent to email" };
+  return { message: "OTP sent to student's email for verification." };
 };
 
-// ✅ Verify OTP → move to Student model
+// ✅ Verify OTP - Step 2
 exports.verifyStudentOTP = async (email, otp) => {
   const pending = await PendingStudent.findOne({ "contactDetails.email": email });
-  if (!pending) throw new Error("Student not found or already verified");
+  if (!pending) throw new Error("No pending registration found for this email.");
 
   if (pending.otp !== otp.toString() || pending.otpExpiry < new Date()) {
-    throw new Error("Invalid or expired OTP");
+    throw new Error("Invalid or expired OTP.");
   }
 
   const { mobile } = pending.contactDetails || {};
-  if (!mobile) throw new Error("Mobile number missing in pending data");
+  if (!mobile) throw new Error("Mobile number missing in pending registration.");
 
-  const existingStudent = await Student.findOne({ "contactDetails.mobile": mobile });
-  if (existingStudent) throw new Error("A student with this mobile already exists.");
+  const existing = await Student.findOne({ "contactDetails.mobile": mobile });
+  if (existing) throw new Error("A student with this mobile number already exists.");
 
   const rawPassword = generatePassword();
   const hashedPassword = await bcrypt.hash(rawPassword, 10);
@@ -181,25 +60,20 @@ exports.verifyStudentOTP = async (email, otp) => {
 
   await sendMail(
     email,
-    "Your Smart School Password",
-    `<h2>Your password is: ${rawPassword}</h2><p>Please use this to login.</p>`
+    "Your Smart School Account Password",
+    `<h2>Your generated password is: ${rawPassword}</h2><p>Use it to log in to your account.</p>`
   );
 
-  return { message: "Student verified and password sent to email" };
+  return { message: "Student verified. Password sent to email." };
 };
 
-//
-// 🔐 STEP 1: Login request (email + password) → send OTP
-//
-exports.loginRequestStudent = async (email, password) => {
+// ✅ Login Request - Send OTP
+exports.loginRequestStudent = async (email) => {
   const student = await Student.findOne({ "contactDetails.email": email });
-  if (!student) throw new Error("Invalid email or password");
+  if (!student) throw new Error("No student account associated with this email.");
 
-  const isMatch = await bcrypt.compare(password, student.password);
-  if (!isMatch) throw new Error("Invalid email or password");
-
-  const otp = generateOTP();
-  const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 mins
+  const otp = generateOTP().toString();
+  const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
   student.otp = otp;
   student.otpExpiry = otpExpiry;
@@ -208,21 +82,29 @@ exports.loginRequestStudent = async (email, password) => {
   await sendMail(
     email,
     "Login OTP - Smart School",
-    `<h2>Your login OTP is: ${otp}</h2><p>It will expire in 10 minutes.</p>`
+    `<h2>Your login OTP is: ${otp}</h2><p>This OTP is valid for 10 minutes.</p>`
   );
 
-  return { message: "OTP sent to email" };
+  return { message: "Login OTP sent to email." };
 };
 
-//
-// 🔓 STEP 2: Login verify (email + otp) → return token
-//
 exports.loginVerifyStudent = async (email, otp) => {
   const student = await Student.findOne({ "contactDetails.email": email });
-  if (!student) throw new Error("Student not found");
+  if (!student) throw new Error("Student not found.");
 
-  if (student.otp !== otp.toString() || student.otpExpiry < new Date()) {
-    throw new Error("Invalid or expired OTP");
+  console.log("Email:", email);
+  console.log("Entered OTP:", otp);
+  console.log("Stored OTP:", student.otp);
+  console.log("Stored OTP Type:", typeof student.otp);
+  console.log("Entered OTP Type:", typeof otp);
+  console.log("Expiry Time:", student.otpExpiry);
+  console.log("Current Time:", new Date());
+  console.log("Is OTP Expired?", student.otpExpiry < new Date());
+  console.log("OTP Match?", student.otp?.toString() === otp?.toString());
+ 
+
+  if (!student.otp || student.otp.toString() !== otp.toString() || student.otpExpiry < new Date()) {
+    throw new Error("Invalid or expired OTP.");
   }
 
   student.otp = undefined;
@@ -235,3 +117,4 @@ exports.loginVerifyStudent = async (email, otp) => {
 
   return { token, student };
 };
+

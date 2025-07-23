@@ -31,7 +31,6 @@ exports.loginRequestStudent = async (req, res) => {
   }
 };
 
-// ✅ Step 2: Login verify → check OTP → return token
 exports.loginVerifyStudent = async (req, res) => {
   const { email, otp } = req.body;
   try {

@@ -178,6 +178,7 @@ const getAllOrdersByUserId = async (userId, page = 1, limit = 10) => {
     return {
       srNo: skip + index + 1,
       orderId: formattedOrderId,
+      _id: order._id,
       packageName: order.packages[0]?.packageId?.packageName || 'N/A',
       dateTime: moment(order.createdAt).format('DD MMM, YYYY'),
       transactionId,

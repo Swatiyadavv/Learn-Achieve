@@ -133,29 +133,63 @@ const getInvoiceByOrderId = async (orderId) => {
 
   return invoice;
 };
-const getAllOrdersByUserId = async (userId) => {
+// const getAllOrdersByUserId = async (userId) => {
+//   const orders = await Order.find({ userId })
+//     .populate('packages.packageId')
+//     .sort({ createdAt: -1 });
+
+//   const formattedOrders = orders.map((order, index) => {
+//     const formattedOrderId = `ORD-${moment(order.createdAt).format('YYYYMMDD')}-${order._id.toString().slice(-6).toUpperCase()}`;
+
+//     // Transaction ID (Random, persistent in memory)
+//     const transactionId = `TXN-${moment(order.createdAt).format('YYYYMMDD')}-${crypto.randomBytes(5).toString('hex')}`;
+
+//     return {
+//       srNo: index + 1,
+//       orderId: formattedOrderId,
+//       packageName: order.packages[0]?.packageId?.packageName || 'N/A',
+//       dateTime: moment(order.createdAt).format('DD MMM, YYYY'),
+//       transactionId,
+//       amount: order.totalAmount,
+//       invoice: "" // or your frontend route
+//     };
+//   });
+
+//   return formattedOrders;
+// };
+const getAllOrdersByUserId = async (userId, page = 1, limit = 10) => {
+  const skip = (page - 1) * limit;
+
+  // 1. Get total count
+  const availableCount = await Order.countDocuments({ userId });
+
+  // 2. Fetch paginated orders
   const orders = await Order.find({ userId })
     .populate('packages.packageId')
-    .sort({ createdAt: -1 });
+    .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(limit);
 
+  // 3. Format orders
   const formattedOrders = orders.map((order, index) => {
     const formattedOrderId = `ORD-${moment(order.createdAt).format('YYYYMMDD')}-${order._id.toString().slice(-6).toUpperCase()}`;
-
-    // Transaction ID (Random, persistent in memory)
     const transactionId = `TXN-${moment(order.createdAt).format('YYYYMMDD')}-${crypto.randomBytes(5).toString('hex')}`;
 
     return {
-      srNo: index + 1,
+      srNo: skip + index + 1,
       orderId: formattedOrderId,
       packageName: order.packages[0]?.packageId?.packageName || 'N/A',
       dateTime: moment(order.createdAt).format('DD MMM, YYYY'),
       transactionId,
       amount: order.totalAmount,
-      invoice: "" // or your frontend route
+      invoice: ""
     };
   });
 
-  return formattedOrders;
+  return {
+    orders: formattedOrders,
+    availableCount
+  };
 };
 
 module.exports = {

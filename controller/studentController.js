@@ -1,88 +1,72 @@
+// const studentService = require("../service/studentService");
+
+// exports.registerStudent = async (req, res) => {
+//   try {
+//     const result = await studentService.registerStudent(req.body);
+//     res.status(200).json(result);
+//   } catch (err) {
+//     res.status(400).json({ message: err.message });
+//   }
+// };
+
+// exports.verifyStudentOTP = async (req, res) => {
+//   const { email, otp } = req.body;
+//   try {
+//     const result = await studentService.verifyStudentOTP(email, otp);
+//     res.status(200).json(result);
+//   } catch (err) {
+//     res.status(400).json({ message: err.message });
+//   }
+// };
+
+// exports.loginStudent = async (req, res) => {
+//   const { email, password } = req.body;
+//   try {
+//     const result = await studentService.loginStudent(email, password);
+//     res.status(200).json(result);
+//   } catch (err) {
+//     res.status(400).json({ message: err.message });
+//   }
+// };
 const studentService = require("../service/studentService");
-const jwt = require("jsonwebtoken");
-const bcrypt = require("bcryptjs");
-const asyncHandler = require("express-async-handler");
-const Student = require("../model/studentModel");
-const OTP = require("../model/otpModel");
-const generateOtp = require("../utils/generateOtp");
-const sendOtpEmail = require("../utils/sendOtpEmail");
 
-// ✅ Add Personal Details
-exports.addPersonalDetails = async (req, res) => {
+exports.registerStudent = async (req, res) => {
   try {
-    const result = await studentService.addPersonalDetails(req.body);
+    const result = await studentService.registerStudent(req.body);
     res.status(200).json(result);
   } catch (err) {
-    res.status(400).json({ error: err.message });
+    res.status(400).json({ message: err.message });
   }
 };
-// In studentController.js
 
-exports.addStudentDetails = async (req, res) => {
+exports.verifyStudentOTP = async (req, res) => {
+  const { email, otp } = req.body;
   try {
-    const result = await studentService.addStudentDetails(req.body);
+    const result = await studentService.verifyStudentOTP(email, otp);
     res.status(200).json(result);
   } catch (err) {
-    res.status(400).json({ error: err.message });
+    res.status(400).json({ message: err.message });
   }
 };
 
-
-// ✅ Add Contact Details
-exports.addContactDetails = async (req, res) => {
+// ✅ Step 1: Login request → verify email/password → send OTP
+exports.loginRequestStudent = async (req, res) => {
+  const { email, password } = req.body;
   try {
-    const result = await studentService.addContactDetails(req.body);
+    const result = await studentService.loginRequestStudent(email, password);
     res.status(200).json(result);
   } catch (err) {
-    res.status(400).json({ error: err.message });
+    res.status(400).json({ message: err.message });
   }
 };
 
-// ✅ Verify OTP and Register
-exports.verifyOtpAndRegister = async (req, res) => {
+// ✅ Step 2: Login verify → check OTP → return token
+exports.loginVerifyStudent = async (req, res) => {
+  const { email, otp } = req.body;
   try {
-    const { pendingStudentId, otp } = req.body;
-    const result = await studentService.verifyOtpAndRegister(pendingStudentId, otp);
+    const result = await studentService.loginVerifyStudent(email, otp);
     res.status(200).json(result);
   } catch (err) {
-    res.status(400).json({ error: err.message });
+    res.status(400).json({ message: err.message });
   }
 };
-
-// ✅ Login Student
-exports.loginStudent = async (req, res) => {
-  try {
-    const { email, password } = req.body;
-    const result = await studentService.loginStudent(email, password);
-    res.status(200).json(result);
-  } catch (err) {
-    res.status(401).json({ error: err.message });
-  }
-};
-
-// ✅ Request OTP for Login
-exports.requestLoginOtp = async (req, res) => {
-  try {
-    const { email, password } = req.body;
-    const message = await studentService.requestLoginOtp(email, password);
-    res.status(200).json({ message });
-  } catch (err) {
-    res.status(401).json({ error: err.message });
-  }
-};
-
-// ✅ Verify OTP for Login
-exports.verifyLoginOtp = async (req, res) => {
-  try {
-    const { email, otp } = req.body;
-    const result = await studentService.verifyLoginOtp(email, otp);
-    res.status(200).json(result);
-  } catch (err) {
-    res.status(401).json({ error: err.message });
-  }
-};
-
-
-
-
-

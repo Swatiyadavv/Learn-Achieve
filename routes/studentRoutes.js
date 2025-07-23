@@ -2,16 +2,11 @@ const express = require("express");
 const router = express.Router();
 const studentController = require("../controller/studentController");
 
-// router.post("/register", studentController.addPersonalDetails);
-router.post("/register", studentController.addStudentDetails);
-// router.post("/contact", studentController.addContactDetails);
-router.post("/verify", studentController.verifyOtpAndRegister);
-
-//login
-router.post("/login", studentController.requestLoginOtp);
-router.post("/login/verify", studentController.verifyLoginOtp);
-
-
+router.post("/register", studentController.registerStudent);
+router.post("/verify", studentController.verifyStudentOTP);
+// router.post("/login", studentController.loginStudent);
+router.post("/login", studentController.loginRequestStudent);
+router.post("/login/verify", studentController.loginVerifyStudent);
 
 
 module.exports = router;

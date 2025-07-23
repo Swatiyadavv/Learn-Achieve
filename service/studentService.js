@@ -6,10 +6,14 @@ const sendMail = require("../utils/sendMail");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
-// ✅ Register Student - Step 1
+//  Register Student - Step 1
 exports.registerStudent = async (data) => {
   const { email, mobile } = data.contactDetails || {};
   if (!email || !mobile) throw new Error("Email and mobile number are required.");
+
+  if (data.registerBy === "Coordinator" && !data.uniqueCode) {
+    throw new Error("Unique code is required for Coordinator registration.");
+  }
 
   // Remove old pending registration if exists
   await PendingStudent.findOneAndDelete({ "contactDetails.email": email });
@@ -28,7 +32,7 @@ exports.registerStudent = async (data) => {
   return { message: "OTP sent to student's email for verification." };
 };
 
-// ✅ Verify OTP - Step 2
+//  Verify OTP - Step 2
 exports.verifyStudentOTP = async (email, otp) => {
   const pending = await PendingStudent.findOne({ "contactDetails.email": email });
   if (!pending) throw new Error("No pending registration found for this email.");
@@ -67,7 +71,7 @@ exports.verifyStudentOTP = async (email, otp) => {
   return { message: "Student verified. Password sent to email." };
 };
 
-// ✅ Login Request - Send OTP
+//  Login Request - Send OTP
 exports.loginRequestStudent = async (email) => {
   const student = await Student.findOne({ "contactDetails.email": email });
   if (!student) throw new Error("No student account associated with this email.");

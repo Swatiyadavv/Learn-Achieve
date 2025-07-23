@@ -137,7 +137,8 @@ exports.generateInvoice = async (req, res) => {
     };
 
     const filePath = path.join(__dirname, '../templates/invoice.ejs');
-
+   
+    
     ejs.renderFile(
       filePath,
       {

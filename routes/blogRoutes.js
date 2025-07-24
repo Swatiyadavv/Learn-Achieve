@@ -16,6 +16,9 @@ router.patch("/status/:id",protect, blogController.toggleBlogStatus);
 router.delete("/delete", protect,blogController.deleteBlog); 
 
 
-router.get("/:categoryId", blogController.getBlogsByCategory);
+router.get("/:categoryId", blogController.getBlogsByCategory) ;
+
+// routes/blogRoutes.js --> get by category id details
+router.get("/details/:id", blogController.getBlogDetails);
 
 module.exports = router  ;

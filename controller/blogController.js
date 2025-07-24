@@ -19,7 +19,7 @@ exports.addOrUpdateBlog = async (req, res) => {
       return res.status(400).json({ message: "All fields are required" });
     }
 
-    //  Convert plain text to HTML first
+    //  Convert plain text to HTML 
     const htmlDetails = convertToHTML(Details);
 
     // Then sanitize that HTML
@@ -199,5 +199,29 @@ exports.getBlogsByCategory = async (req, res) => {
   } catch (error) {
     console.error("Error fetching blogs by category:", error);
     res.status(500).json({ message: "Server error" });
+  }
+};
+// controller/blogController.js
+exports.getBlogDetails = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    if (!id) {
+      return res.status(400).json({ message: "Blog ID is required" });
+    }
+
+    const blog = await blogService.getBlogDetailsById(id);
+
+    if (!blog) {
+      return res.status(404).json({ message: "Blog not found" });
+    }
+
+    res.status(200).json({
+      message: "Blog details fetched successfully",
+      data: blog.Details,
+    });
+  } catch (error) {
+    console.error("Error fetching blog details:", error);
+    res.status(500).json({ message: "Internal server error" });
   }
 };

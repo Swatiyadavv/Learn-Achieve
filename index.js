@@ -20,8 +20,9 @@ const blogRoutes = require("./routes/blogRoutes");
 const invoiceRoutes = require('./routes/invoiceRoutes');
 const studentRoutes = require("./routes/studentRoutes");
 const coordinatorRoutes = require('./routes/coordinatorRoutes');
-
-
+const studyMaterial = require('./routes/studyMaterialRoutes');
+const moduleRoutes = require('./routes/moduleRoutes');
+const topicRoutes = require('./routes/topicRoutes');
 const cors = require('cors')
 
 const app = express();
@@ -51,8 +52,9 @@ app.use("/api/AddBlogs", blogRoutes);
 app.use('/api/invoice', invoiceRoutes);
 app.use('/api/student',studentRoutes);
 app.use('/api/coordinators', coordinatorRoutes);
-
-
+app.use('/api/study',studyMaterial);
+app.use('/api/module',moduleRoutes);
+app.use('/api/topic',topicRoutes);
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

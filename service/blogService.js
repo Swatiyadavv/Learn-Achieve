@@ -14,23 +14,22 @@ exports.getAllBlogs = async ({ search, limit, offset }) => {
   const query = {};
 
   if (search) {
-    // Escape special regex characters for safety
     const escapedSearch = search.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
-    // Match anywhere in BlogTitle, BriefIntro, or AuthorName
     query.$or = [
       { BlogTitle: { $regex: escapedSearch, $options: "i" } },
       { BriefIntro: { $regex: escapedSearch, $options: "i" } },
-      { AuthorName: { $regex: escapedSearch, $options: "i" } },
     ];
   }
 
   const blogs = await Blog.find(query)
-    .sort({ createdAt: -1 }) // latest first
+    .populate("AuthorName", "name -_id") // only name, hide _id
+    // .populate("SelectCategory",) 
+    .sort({ createdAt: -1 })
     .skip(offset)
     .limit(limit);
 
-  const total = await Blog.countDocuments(query); // for pagination
+  const total = await Blog.countDocuments(query);
 
   return { blogs, total };
 };
@@ -51,5 +50,17 @@ exports.deleteBlogById = async (id) => {
 };
 
 exports.deleteMultipleBlogs = async (ids) => {
-  return await Blog.deleteMany({ _id: { $in: ids } });
+  return await Blog.deleteMany({ _id: { $in: ids } 
+  });
 };
+// service/blogService.js
+
+exports.getBlogsByCategory = async (categoryId) => {
+  return await Blog.find({ SelectCategory: categoryId, isActive: true }) // optional: filter only active blogs
+    .populate("AuthorName", "name -_id")
+    .populate("SelectCategory", "name -_id") // if category name is needed
+    .sort({ createdAt: -1 });
+};
+
+
+

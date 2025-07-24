@@ -20,7 +20,7 @@ const blogRoutes = require("./routes/blogRoutes");
 const invoiceRoutes = require('./routes/invoiceRoutes');
 const studentRoutes = require("./routes/studentRoutes");
 const coordinatorRoutes = require('./routes/coordinatorRoutes');
-
+// const studyMaterial = require('./routes/studyMaterialRoutes');
 
 const cors = require('cors')
 
@@ -51,7 +51,7 @@ app.use("/api/AddBlogs", blogRoutes);
 app.use('/api/invoice', invoiceRoutes);
 app.use('/api/student',studentRoutes);
 app.use('/api/coordinators', coordinatorRoutes);
-
+// app.use('/api/study',studyMaterial);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {

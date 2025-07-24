@@ -1,5 +1,5 @@
 const mongoose = require('mongoose');
-const sanitizeHtml = require('sanitize-html'); // make sure to install this
+const sanitizeHtml = require('sanitize-html'); 
 
 const topicSchema = new mongoose.Schema({
   moduleId: {
@@ -16,8 +16,8 @@ details: {
   type: String,
   set: (value) =>
     sanitizeHtml(value, {
-      allowedTags: false, // Allow all HTML tags
-      allowedAttributes: false, // Allow all attributes
+      allowedTags: false, //  all HTML tags
+      allowedAttributes: false, //  all attributes
       allowedSchemes: ['http', 'https', 'data'],
       disallowedTagsMode: 'discard',
     })

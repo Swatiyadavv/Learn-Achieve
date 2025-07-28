@@ -7,7 +7,7 @@ const { protect } = require("../middleware/authMiddleware");
 router.post("/add/", protect, mockTestController.createandUpdate);
 
 //  Get All + Search + Pagination + Get By ID (combined)
-router.get("/list/:id?", protect, mockTestController.getPaginatedOrSingleMockTest);
+router.get("/list/:id?", mockTestController.getPaginatedOrSingleMockTest);
 //  Delete single or multiple mock tests
 router.delete("/delete", protect, mockTestController.deleteMockTest);
 

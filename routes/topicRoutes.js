@@ -4,7 +4,8 @@ const router = express.Router();
 const upload = require('../middleware/upload');
 const topicController = require('../controller/topicController');
 
-router.post('/add', upload.single('file'),topicController.addOrUpdateTopic);
+
+router.post('/add', upload.array('files', 10), topicController.addOrUpdateTopic);
 // routes/topicRoutes.js
 router.delete('/delete',topicController.deleteTopic);
 // get

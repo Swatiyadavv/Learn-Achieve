@@ -8,8 +8,7 @@ const { protect } = require('../middleware/authMiddleware');
 router.post('/add', protect, upload.single('image'), subjectController.addOrUpdateSubject);
 
 // Search + pagination + all
-router.get('/list', protect, subjectController.getSubjectList);
-
+router.get('/list', subjectController.getSubjectList);
 // Smart delete (single or multiple)
 router.delete('/delete', protect, subjectController.deleteSubjectSmart);
 

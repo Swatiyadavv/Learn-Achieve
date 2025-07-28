@@ -1,5 +1,6 @@
+
 const mongoose = require('mongoose');
-const sanitizeHtml = require('sanitize-html'); // make sure to install this
+const sanitizeHtml = require('sanitize-html'); 
 
 const topicSchema = new mongoose.Schema({
   moduleId: {
@@ -12,32 +13,34 @@ const topicSchema = new mongoose.Schema({
     required: true,
     match: [/^[a-zA-Z0-9\s]+$/, "Only alphanumeric and spaces allowed"],
   },
-details: {
-  type: String,
-  set: (value) =>
-    sanitizeHtml(value, {
-      allowedTags: false, // Allow all HTML tags
-      allowedAttributes: false, // Allow all attributes
-      allowedSchemes: ['http', 'https', 'data'],
-      disallowedTagsMode: 'discard',
-    })
-},
-  fileUrl: {
+  details: {
     type: String,
+    set: (value) =>
+      sanitizeHtml(value, {
+        allowedTags: false,
+        allowedAttributes: false,
+        allowedSchemes: ['http', 'https', 'data'],
+        disallowedTagsMode: 'discard',
+      })
+  },
+  fileUrl: {
+    type: [String],
     validate: {
-      validator: function (v) {
-        return !v || /\.(pdf|doc|docx|ppt|pptx)$/i.test(v);
+      validator: function (arr) {
+        return arr.every(v => /\.(pdf|doc|docx|ppt|pptx)$/i.test(v));
       },
       message: "Only PDF, DOC, DOCX, PPT, or PPTX files are allowed"
     }
   },
   youtubeLink: {
-    type: String,
+    type: [String],
     validate: {
-      validator: function (v) {
-        return !v || /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+$/.test(v);
+      validator: function (arr) {
+        return arr.every(v =>
+          /^(https?:\/\/)?(www\.)?(youtube\.com|youtu\.be)\/.+$/.test(v)
+        );
       },
-      message: 'Invalid YouTube link'
+      message: 'One or more YouTube links are invalid'
     }
   }
 }, { timestamps: true });

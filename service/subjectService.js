@@ -39,25 +39,25 @@ const subjectService = {
 
   getFilteredSubjects: async (search, limit, offset) => {
     const filter = search
-      ? { subject: { $regex: search.trim(), $options: 'i' } }
+      ? { subject: { $regex: search.trim(), $options: "i" } }
       : {};
 
     const total = await Subject.countDocuments(filter);
+    const skip = offset * limit;
     const subjects = await Subject.find(filter)
-      .skip(offset)
+      .skip(skip)
       .limit(limit)
-      .populate('class')
+      .populate("class")
       .sort({ createdAt: -1 });
-
+    const hasNext = skip + limit < total;
     return {
       total,
       count: subjects.length,
       subjects,
-      nextOffset: offset + limit < total ? offset + limit : null,
-      prevOffset: offset - limit >= 0 ? offset - limit : null,
+      nextOffset: hasNext ? offset + 1 : null, // send next page
+      prevOffset: offset > 0 ? offset - 1 : null,
     };
   },
-
   deleteSubject: async (id) => {
     const subject = await Subject.findById(id);
     if (!subject) throw new Error('Subject not found');

@@ -1,0 +1,25 @@
+
+        <html>
+          <head>
+            <title>Challan Invoice</title>
+            <style>
+              body { font-family: Arial, sans-serif; padding: 24px; }
+              h1   { color: #e67e22; }
+              table { margin-top: 20px; border-collapse: collapse; }
+              td    { padding: 8px 12px; border: 1px solid #ddd; }
+            </style>
+          </head>
+          <body>
+            <h1>Traffic Challan Invoice</h1>
+            <table>
+              <tr><td><b>Challan ID</b></td><td>687dea8e6f2200e2a51bdddb</td></tr>
+              <tr><td><b>Date</b></td><td>7/21/2025</td></tr>
+              <tr><td><b>Vehicle No.</b></td><td>RJ20987</td></tr>
+              <tr><td><b>Mobile</b></td><td>—</td></tr>
+              <tr><td><b>Reason</b></td><td>Signal Jump</td></tr>
+              <tr><td><b>Amount</b></td><td>₹500</td></tr>
+              <tr><td><b>Status</b></td><td>Paid</td></tr>
+            </table>
+          </body>
+        </html>
+      

@@ -1,17 +1,15 @@
+
 const Topic = require('../model/Topic');
 const sanitizeHtml = require('sanitize-html');
 
-// Create or Update Topic
 exports.addOrUpdateTopic = async (req, res) => {
   try {
     const { topicId, moduleId, topicName, details, youtubeLink } = req.body;
-    let fileUrl = null;
 
     if (!moduleId || !topicName || !details) {
       return res.status(400).json({ message: "Module ID, Topic Name, and Details are required" });
     }
 
-    // Clean and store HTML content safely
     const htmlDetails = sanitizeHtml(details, {
       allowedTags: [
         'p', 'b', 'i', 'em', 'strong', 'ul', 'ol', 'li', 'a', 'img', 'br',
@@ -25,19 +23,23 @@ exports.addOrUpdateTopic = async (req, res) => {
       allowedSchemes: ['http', 'https', 'mailto']
     });
 
-    // Handle file upload
-    if (req.file) {
-      fileUrl = `/uploads/${req.file.filename}`;
+    let fileUrls = [];
+    if (req.files && req.files.length > 0) {
+      fileUrls = req.files.map(file => `/uploads/${file.filename}`);
     }
 
+    const youtubeLinks = Array.isArray(youtubeLink)
+      ? youtubeLink
+      : youtubeLink
+      ? [youtubeLink]
+      : [];
+
     if (topicId) {
-      // UPDATE
       const existing = await Topic.findById(topicId);
       if (!existing) {
         return res.status(404).json({ message: "Topic not found" });
       }
 
-      // Check for duplicate name under same module (excluding current topic)
       const duplicate = await Topic.findOne({
         _id: { $ne: topicId },
         moduleId,
@@ -49,14 +51,15 @@ exports.addOrUpdateTopic = async (req, res) => {
 
       existing.topicName = topicName.trim().toLowerCase();
       existing.details = htmlDetails;
-      existing.youtubeLink = youtubeLink;
-      if (fileUrl) existing.fileUrl = fileUrl;
+      existing.youtubeLink = youtubeLinks;
+      if (fileUrls.length > 0) {
+        existing.fileUrl = fileUrls;
+      }
 
       await existing.save();
-
       return res.status(200).json({ message: "Topic updated successfully", data: existing });
+
     } else {
-      //  CREATE
       const existing = await Topic.findOne({
         moduleId,
         topicName: topicName.trim().toLowerCase()
@@ -69,18 +72,18 @@ exports.addOrUpdateTopic = async (req, res) => {
         moduleId,
         topicName: topicName.trim().toLowerCase(),
         details: htmlDetails,
-        fileUrl,
-        youtubeLink
+        fileUrl: fileUrls,
+        youtubeLink: youtubeLinks
       });
 
       return res.status(201).json({ message: "Topic added successfully", data: newTopic });
     }
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Server error" });
+    console.error("Error in addOrUpdateTopic:", error);
+    return res.status(500).json({ message: "Server error" });
   }
 };
-// controller/topicController.js
+
 exports.deleteTopic = async (req, res) => {
   try {
     const { topicIds } = req.body;
@@ -104,10 +107,9 @@ exports.deleteTopic = async (req, res) => {
   }
 };
 
-
 exports.getAllTopics = async (req, res) => {
   try {
-    const { moduleId } = req.body;
+    const { moduleId } = req.params;
 
     const filter = {};
     if (moduleId) {

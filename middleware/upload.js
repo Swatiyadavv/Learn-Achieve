@@ -3,23 +3,25 @@ const path = require('path');
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, 'uploads/');
+    cb(null, 'uploads/'); // Folder where files are saved
   },
   filename: function (req, file, cb) {
-    const unique = Date.now() + '-' + file.originalname;
-    cb(null, unique);
+    cb(null, Date.now() + '-' + file.originalname); // Unique filename
   }
 });
 
-const fileFilter = (req, file, cb) => {
-  const allowedTypes = ['.pdf', '.doc', '.docx', '.ppt', '.pptx'];
-  const ext = path.extname(file.originalname).toLowerCase();
-
-  if (allowedTypes.includes(ext)) {
-    cb(null, true);
-  } else {
-    cb(new Error('Only PDF, DOC, DOCX, PPT, and PPTX files are allowed'), false);
+const fileFilter = function (req, file, cb) {
+  const allowedTypes = /\.(pdf|doc|docx|ppt|pptx)$/i;
+  if (!allowedTypes.test(file.originalname)) {
+    return cb(new Error('Only PDF, DOC, DOCX, PPT, or PPTX files are allowed'));
   }
+  cb(null, true);
 };
 
-module.exports = multer({ storage, fileFilter });
+const upload = multer({
+  storage,
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10 MB
+  fileFilter
+});
+
+module.exports = upload;

@@ -109,7 +109,7 @@ exports.deleteTopic = async (req, res) => {
 
 exports.getAllTopics = async (req, res) => {
   try {
-    const { moduleId } = req.body;
+    const { moduleId } = req.params;
 
     const filter = {};
     if (moduleId) {

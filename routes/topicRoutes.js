@@ -9,5 +9,5 @@ router.post('/add', upload.array('files', 10), topicController.addOrUpdateTopic)
 // routes/topicRoutes.js
 router.delete('/delete',topicController.deleteTopic);
 // get
-router.get('/get', topicController.getAllTopics);
+router.get('/get/:moduleId', topicController.getAllTopics);
 module.exports = router;

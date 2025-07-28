@@ -189,5 +189,20 @@ resetPassword: async (token, newPassword) => {
   if (!user) throw new Error("User not found");
   return user;
 },
+
+changePassword: async (userId, currentPassword, newPassword) => {
+  const user = await User.findById(userId);
+  if (!user) throw new Error(RESPONSE.USER_NOT_FOUND);
+
+  const match = await bcrypt.compare(currentPassword, user.password);
+  if (!match) throw new Error(RESPONSE.INVALID_CREDENTIALS);
+
+  const hashedNew = await bcrypt.hash(newPassword, 10);
+  user.password = hashedNew;
+  await user.save();
+
+  return { message: "Password changed successfully." };
+},
+
 }
 module.exports = userService;

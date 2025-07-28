@@ -81,3 +81,18 @@ exports.getUserDetails = async (req, res) => {
     res.status(400).json({ message: err.message });
   }
 };
+
+exports.changePassword = async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ message: "Both current and new passwords are required" });
+    }
+
+    const result = await userService.changePassword(req.user._id, currentPassword, newPassword);
+    res.status(200).json(result);
+  } catch (e) {
+    res.status(400).json({ message: e.message });
+  }
+};

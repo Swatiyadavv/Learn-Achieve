@@ -45,7 +45,7 @@ app.use('/api/user', publicPackageRoutes);
 app.use('/api/classMaster',classMasterRoutes)
 app.use("/api/blog", blogCategoryRoutes);
 app.use('/api/question',questionRoutes);
-app.use('/api/mockTestfetch', mockTestfetch);
+app.use('/api/user', mockTestfetch);
 app.use('/api/subject', subjectRoutes);
 app.use('/api/author', authorRoutes);
 app.use("/api/AddBlogs", blogRoutes);

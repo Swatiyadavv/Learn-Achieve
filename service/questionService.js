@@ -1,11 +1,15 @@
+
 const QuestionBank = require("../model/questionModel");
 require("../model/classMasterModel");
 require("../model/subjectModel");
-const SubQuestion = require("../model/subQuestionModel")
+const SubQuestion = require("../model/subQuestionModel");
+const fs = require("fs");
+const path = require("path");
 
+// ✅ CREATE or UPDATE Question
 exports.createOrUpdateQuestionBank = async (data) => {
   const {
-    id, classId, subjectId, medium, module,
+    id, mockTestId, classId, subjectId, medium, module,
     topicName, typeOfQuestion, questionType,
     questionText, options, correctAnswer
   } = data;
@@ -17,6 +21,7 @@ exports.createOrUpdateQuestionBank = async (data) => {
     const updated = await QuestionBank.findById(id);
     if (!updated) throw new Error("Question not found");
 
+    updated.mockTestId = mockTestId;
     updated.classId = classId;
     updated.subjectId = subjectId;
     updated.medium = medium;
@@ -30,7 +35,6 @@ exports.createOrUpdateQuestionBank = async (data) => {
       updated.options = options.map(opt => opt.trim());
       updated.correctAnswer = correctAnswer.trim();
     } else {
-      // Clear general fields
       updated.questionText = null;
       updated.options = [];
       updated.correctAnswer = null;
@@ -48,14 +52,20 @@ exports.createOrUpdateQuestionBank = async (data) => {
   if (exists) throw new Error("This Question Bank entry already exists.");
 
   const question = new QuestionBank({
-    classId, subjectId, medium,
-    module: cleanModule, topicName: cleanTopic,
-    typeOfQuestion, questionType
+    mockTestId, // ✅ added
+    classId,
+    subjectId,
+    medium,
+    module: cleanModule,
+    topicName: cleanTopic,
+    typeOfQuestion,
+    questionType
   });
 
   if (typeOfQuestion === "General") {
     if (!questionText || !options || options.length !== 4 || !correctAnswer)
       throw new Error("General question must have text, 4 options, and correct answer.");
+
     question.questionText = questionText.trim();
     question.options = options.map(opt => opt.trim());
     question.correctAnswer = correctAnswer.trim();
@@ -65,6 +75,7 @@ exports.createOrUpdateQuestionBank = async (data) => {
   return question;
 };
 
+// ✅ Add sub-question (for Comprehensive / Poem)
 exports.addSubQuestion = async (data) => {
   const { parentId, questionText, options, correctAnswer } = data;
 
@@ -78,11 +89,12 @@ exports.addSubQuestion = async (data) => {
     options: options.map(opt => opt.trim()),
     correctAnswer: correctAnswer.trim()
   });
+
   await subQuestion.save();
   return subQuestion;
 };
 
-
+// ✅ Get questions with filter
 exports.getFilteredQuestionBank = async (queryParams) => {
   const { query = "", limit = 10, offset = 0 } = queryParams;
   const searchRegex = new RegExp(query, "i");
@@ -106,11 +118,13 @@ exports.getFilteredQuestionBank = async (queryParams) => {
     questions,
   };
 };
+
+// ✅ Get all subquestions of a parent
 exports.getSubQuestions = async (parentId) => {
   return await SubQuestion.find({ parentId }).sort({ createdAt: -1 });
 };
 
-
+// ✅ Delete subquestion
 exports.deleteSubQuestion = async (id) => {
   const sub = await SubQuestion.findById(id);
   if (!sub) throw new Error("Subquestion not found");
@@ -119,16 +133,17 @@ exports.deleteSubQuestion = async (id) => {
   return true;
 };
 
-exports.updateStatus =async (id, status) => {
+// ✅ Update active/inactive status
+exports.updateStatus = async (id, status) => {
   if (!['active', 'inactive'].includes(status)) {
     throw new Error('Invalid status');
   }
 
   const question = await QuestionBank.findById(id);
-  if (!question) throw new Error('question not found');
+  if (!question) throw new Error('Question not found');
 
   if (question.status === status) {
-    throw new Error(`question is already ${status}`);
+    throw new Error(`Question is already ${status}`);
   }
 
   question.status = status;
@@ -137,33 +152,33 @@ exports.updateStatus =async (id, status) => {
   return question;
 };
 
+// ✅ Delete one question (and its image if exists)
+exports.deleteSubject = async (id) => {
+  const question = await QuestionBank.findById(id);
+  if (!question) throw new Error('Question not found');
 
+  if (question.image) {
+    const imagePath = path.resolve(question.image);
+    fs.unlink(imagePath, err => {
+      if (err) console.error('Image delete error:', err.message);
+    });
+  }
 
+  await QuestionBank.findByIdAndDelete(id);
+};
 
-exports.deleteSubject= async (id) => {
-    const question = await QuestionBank.findById(id);
-    if (!question) throw new Error('question not found');
+// ✅ Delete multiple questions
+exports.deleteMultiple = async (ids) => {
+  const questions = await QuestionBank.find({ _id: { $in: ids } });
 
+  for (const question of questions) {
     if (question.image) {
       const imagePath = path.resolve(question.image);
       fs.unlink(imagePath, err => {
-        if (err) console.error('Image delete error:', err.message);
+        if (err) console.error('Failed to delete image:', err);
       });
     }
+  }
 
-    await QuestionBank.findByIdAndDelete(id);
-  };
-
-  exports.deleteMultiple= async (ids) => {
-    const questions = await QuestionBank.find({ _id: { $in: ids } });
-
-    for (const question of questions) {
-      if (question.image) {
-        const imagePath = path.resolve(question.image);
-        fs.unlink(imagePath, err => {
-          if (err) console.error('Failed to delete image:', err);
-        });
-      }
-    }
-await QuestionBank.deleteMany({ _id: { $in: ids } });
-  };
+  await QuestionBank.deleteMany({ _id: { $in: ids } });
+};

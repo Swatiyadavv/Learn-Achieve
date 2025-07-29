@@ -44,9 +44,11 @@ const packageService = {
       pkg.className = className;
       pkg.SelectClass = SelectClass; // added
       pkg.medium = medium;
-      pkg.mockTests = Array.isArray(mockTests)
-        ? mockTests
-        : mockTests.split(',').map((m) => m.trim());
+
+pkg.mockTests = Array.isArray(mockTests)
+  ? mockTests.map(id => id.trim())
+  : mockTests.split(',').map(id => id.trim());
+
 
       pkg.numberOfAttempts = numberOfAttempts;
       pkg.platform = platform;
@@ -120,7 +122,8 @@ const packageService = {
    * Get All Active Packages with Count of Mock Tests
    */
   getAllPackages: async () => {
-    const packages = await Package.find({ isActive: true });
+  const packages = await Package.find({ isActive: true }).populate('mockTests');
+
 
     return packages.map((pkg) => ({
       ...pkg.toObject(),
@@ -152,11 +155,11 @@ const packageService = {
       if (updatedData[field]) pkg[field] = updatedData[field];
     });
 
-    if (updatedData.mockTests) {
-      pkg.mockTests = Array.isArray(updatedData.mockTests)
-        ? updatedData.mockTests
-        : updatedData.mockTests.split(',').map(item => item.trim());
-    }
+  if (updatedData.mockTests) {
+  pkg.mockTests = Array.isArray(updatedData.mockTests)
+    ? updatedData.mockTests.map(id => id.trim())
+    : updatedData.mockTests.split(',').map(id => id.trim());
+}
 
     if (typeof updatedData.isActive !== 'undefined') {
       pkg.isActive = typeof updatedData.isActive === 'string'

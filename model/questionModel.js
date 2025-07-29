@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 
 const questionBankSchema = new mongoose.Schema({
+  mockTestId: { type: mongoose.Schema.Types.ObjectId, ref: "MockTest", required: true },
   classId: { type: mongoose.Schema.Types.ObjectId, ref: "ClassMaster", required: true },
   subjectId: { type: mongoose.Schema.Types.ObjectId, ref: "Subject", required: true },
   medium: { type: String, enum: ["Hindi", "English", "Semi-English", "Marathi"], required: true },

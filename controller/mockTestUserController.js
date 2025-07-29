@@ -1,12 +1,111 @@
-// controller/mockTestUserController.js
-const UserMockTest = require('../model/mockTestUser');
-const getUserMockTests = async (req, res) => {
+
+const { getMockTestDetailsService } = require('../service/mockTestUserService');
+const { successResponse, errorResponse } = require('../utils/responseHandler');
+
+const QuestionBank = require("../model/questionModel");
+const MockTest = require("../model/mockTestModel"); 
+
+const Question = require('../model/questionModel');
+const SubQuestion = require('../model/subQuestionModel');
+// const MockTest = require('../model/mockTestModel');
+exports.getMockTestDetails = async (req, res) => {
   try {
-    const userId = req.user.id;
-    const mockTests = await UserMockTest.find({ userId });
-    res.status(200).json({ mockTests });
+    const { mockTestId } = req.params;
+
+    // Step 1: Fetch mockTest and populate class & subjects
+    const mockTest = await MockTest.findById(mockTestId)
+      .populate("class")
+      .populate("subjects");
+
+    if (!mockTest) {
+      return res.status(404).json({ success: false, message: "Mock test not found" });
+    }
+
+    // Step 2: Fetch all related questions (in one go for performance)
+    const allQuestions = await QuestionBank.find({ mockTestId });
+
+    // Step 3: Filter and group questions per subject
+    const subjectQuestions = mockTest.subjects.map(subject => {
+      const questions = allQuestions.filter(q =>
+        q.subjectId.toString() === subject._id.toString() &&
+        q.classId.toString() === mockTest.class[0]._id.toString() &&
+        q.medium === mockTest.medium[0]  // assuming medium is an array
+      );
+
+      return {
+        subjectId: subject._id,
+        questions
+      };
+    });
+
+    // Step 4: Respond
+    res.status(200).json({
+      success: true,
+      message: "Mock test fetched successfully",
+      data: {
+        ...mockTest._doc,
+        subjectQuestions
+      }
+    });
   } catch (err) {
-    res.status(500).json({ message: 'Failed to fetch mock tests', error: err.message });
+    console.error(err.message);
+    res.status(500).json({ success: false, message: "Server error" });
   }
 };
-module.exports = {getUserMockTests};
+
+
+exports.getQuestionsBySubject = async (req, res) => {
+  try {
+    const { mockTestId, subjectId } = req.params;
+
+    // Step 1: Check if subject is in mockTest
+    const mockTest = await MockTest.findById(mockTestId).populate('subjects');
+
+    if (!mockTest) {
+      return res.status(404).json({ success: false, message: 'Mock test not found' });
+    }
+
+    const subjectExists = mockTest.subjects.some(
+      (subj) => subj._id.toString() === subjectId
+    );
+
+    if (!subjectExists) {
+      return res.status(400).json({ success: false, message: 'Subject not found in this mock test' });
+    }
+
+    // Step 2: Fetch all questions under this mockTest + subjectId
+    const questions = await Question.find({ mockTestId, subjectId }).lean();
+
+    // Step 3: Fetch subQuestions for each question
+    const formattedQuestions = await Promise.all(
+      questions.map(async (q) => {
+        const subQuestions = await SubQuestion.find({ questionId: q._id }).lean();
+        return {
+          questionId: q._id,
+          question: q.question,
+          options: q.options,
+          questionType: q.questionType,
+          typeOfQuestion: q.typeOfQuestion,
+          subQuestions: subQuestions.map(sub => ({
+            subQuestionId: sub._id,
+            question: sub.question,
+            options: sub.options
+          }))
+        };
+      })
+    );
+
+    // Step 4: Respond
+    res.status(200).json({
+      success: true,
+      message: 'Questions fetched successfully',
+      data: {
+        subjectId,
+        questions: formattedQuestions
+      }
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ success: false, message: 'Server error' });
+  }
+};

@@ -19,20 +19,18 @@ const packageSchema = new mongoose.Schema({
     type: String,
     required: true
   },
-  mockTests: {
-    type: [{
-      type: String,
-      enum: ['Maths', 'Science', 'English', 'History', 'Geography']
-    }],
+  mockTests: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'MockTest',
     required: true
-  },
+  }],
   numberOfAttempts: {
     type: Number,
     required: true
   },
   platform: {
     type: String,
-    enum: ['Bharat Sat', 'ExamYa', 'Pradnya', 'Learntic'],
+    enum: ['Bharat Sat', 'Pradanya Learnatics'],
     required: true
   },
   actualPrice: {

@@ -37,7 +37,7 @@ exports.getMockTestDetails = async (req, res) => {
       };
     });
 
-    // ✅ Return final response
+    // Return final response
     res.status(200).json({
       success: true,
       message: "Mock test fetched successfully",

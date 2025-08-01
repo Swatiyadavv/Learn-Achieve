@@ -7,7 +7,7 @@ const MockTest = require("../model/mockTestModel");
 
 const Question = require('../model/questionModel');
 const SubQuestion = require('../model/subQuestionModel');
-// const MockTest = require('../model/mockTestModel');
+
 exports.getMockTestDetails = async (req, res) => {
   try {
     const { mockTestId } = req.params;
@@ -58,7 +58,7 @@ exports.getQuestionsBySubject = async (req, res) => {
   try {
     const { mockTestId, subjectId } = req.params;
 
-    // Step 1: Check if subject is in mockTest
+  
     const mockTest = await MockTest.findById(mockTestId).populate('subjects');
 
     if (!mockTest) {
@@ -73,10 +73,10 @@ exports.getQuestionsBySubject = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Subject not found in this mock test' });
     }
 
-    // Step 2: Fetch all questions under this mockTest + subjectId
+
     const questions = await Question.find({ mockTestId, subjectId }).lean();
 
-    // Step 3: Fetch subQuestions for each question
+  
     const formattedQuestions = await Promise.all(
       questions.map(async (q) => {
         const subQuestions = await SubQuestion.find({ questionId: q._id }).lean();
@@ -95,7 +95,7 @@ exports.getQuestionsBySubject = async (req, res) => {
       })
     );
 
-    // Step 4: Respond
+    // Step:4 => respond
     res.status(200).json({
       success: true,
       message: 'Questions fetched successfully',

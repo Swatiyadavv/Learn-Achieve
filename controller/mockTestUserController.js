@@ -24,19 +24,26 @@ exports.getMockTestDetails = async (req, res) => {
     // 🧹 Load all questions (without mockTestId because it's removed)
     const allQuestions = await QuestionBank.find({});
 
-    //  Group questions by subject based on subjectId, classId and medium
-    const subjectQuestions = mockTest.subjects.map(subject => {
-      const questions = allQuestions.filter(q =>
-        q.subjectId.toString() === subject._id.toString() &&
-        q.classId.toString() === mockTest.class[0]._id.toString() &&
-        mockTest.medium.includes(q.medium)
-      );
+    
+const subjectQuestions = mockTest.subjects.map(subject => {
+  const questions = allQuestions.filter(q => {
+    // console.log("Checking Question:", q._id);
+    // console.log("Subject Match:", q.subjectId?.toString() === subject._id.toString());
+    // console.log("Class Match:", q.classId?.toString() === mockTest.class[0]._id.toString());
+    // console.log("Medium Match:", mockTest.medium.includes(q.medium));
 
-      return {
-        subjectId: subject._id,
-        questions
-      };
-    });
+    return (
+      q.subjectId?.toString() === subject._id.toString() &&
+      q.classId?.toString() === mockTest.class[0]._id.toString() &&
+      mockTest.medium.includes(q.medium)
+    );
+  });
+
+  return {
+    subjectId: subject._id,
+    questions
+  };
+});
 
     // Return final response
     res.status(200).json({

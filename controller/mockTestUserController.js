@@ -84,23 +84,42 @@ exports.getQuestionsBySubject = async (req, res) => {
       subjectId: new mongoose.Types.ObjectId(subjectId)
     }).lean();
 
+    // const formattedQuestions = await Promise.all(
+    //   questions.map(async (q) => {
+    //     const subQuestions = await SubQuestion.find({ questionId: q._id }).lean();
+    //     return {
+    //       questionId: q._id,
+    //       question: q.questionText,
+    //       options: q.options,
+    //       questionType: q.questionType,
+    //       typeOfQuestion: q.typeOfQuestion,
+    //       subQuestions: subQuestions.map(sub => ({
+    //         subQuestionId: sub._id,
+    //         question: sub.question,
+    //         options: sub.options
+    //       }))
+    //     };
+    //   })
+    // );
+
     const formattedQuestions = await Promise.all(
-      questions.map(async (q) => {
-        const subQuestions = await SubQuestion.find({ questionId: q._id }).lean();
-        return {
-          questionId: q._id,
-          question: q.questionText,
-          options: q.options,
-          questionType: q.questionType,
-          typeOfQuestion: q.typeOfQuestion,
-          subQuestions: subQuestions.map(sub => ({
-            subQuestionId: sub._id,
-            question: sub.question,
-            options: sub.options
-          }))
-        };
-      })
-    );
+  questions.map(async (q) => {
+    const subQuestions = await SubQuestion.find({ parentId: q._id }).lean();
+
+    return {
+      questionId: q._id,
+      question: q.questionText,
+      options: q.options,
+      questionType: q.questionType,
+      typeOfQuestion: q.typeOfQuestion,
+      subQuestions: subQuestions.map(sub => ({
+        subQuestionId: sub._id,
+        question: sub.questionText,
+        options: sub.options
+      }))
+    };
+  })
+);
 
     res.status(200).json({
       success: true,

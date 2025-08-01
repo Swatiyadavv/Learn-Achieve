@@ -6,10 +6,9 @@ const SubQuestion = require("../model/subQuestionModel");
 const fs = require("fs");
 const path = require("path");
 
-// ✅ CREATE or UPDATE Question
 exports.createOrUpdateQuestionBank = async (data) => {
   const {
-    id, mockTestId, classId, subjectId, medium, module,
+    id, classId, subjectId, medium, module,
     topicName, typeOfQuestion, questionType,
     questionText, options, correctAnswer
   } = data;
@@ -21,7 +20,6 @@ exports.createOrUpdateQuestionBank = async (data) => {
     const updated = await QuestionBank.findById(id);
     if (!updated) throw new Error("Question not found");
 
-    updated.mockTestId = mockTestId;
     updated.classId = classId;
     updated.subjectId = subjectId;
     updated.medium = medium;
@@ -52,7 +50,6 @@ exports.createOrUpdateQuestionBank = async (data) => {
   if (exists) throw new Error("This Question Bank entry already exists.");
 
   const question = new QuestionBank({
-    mockTestId, // ✅ added
     classId,
     subjectId,
     medium,
@@ -74,6 +71,7 @@ exports.createOrUpdateQuestionBank = async (data) => {
   await question.save();
   return question;
 };
+
 
 // ✅ Add sub-question (for Comprehensive / Poem)
 exports.addSubQuestion = async (data) => {

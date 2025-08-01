@@ -12,7 +12,6 @@ exports.getMockTestDetails = async (req, res) => {
   try {
     const { mockTestId } = req.params;
 
-    // Step 1: Fetch mockTest and populate class & subjects
     const mockTest = await MockTest.findById(mockTestId)
       .populate("class")
       .populate("subjects");
@@ -21,15 +20,15 @@ exports.getMockTestDetails = async (req, res) => {
       return res.status(404).json({ success: false, message: "Mock test not found" });
     }
 
-    // Step 2: Fetch all related questions (in one go for performance)
-    const allQuestions = await QuestionBank.find({ mockTestId });
+    // 🧹 Load all questions (without mockTestId because it's removed)
+    const allQuestions = await QuestionBank.find({});
 
-    // Step 3: Filter and group questions per subject
+    // 🧠 Group questions by subject based on subjectId, classId and medium
     const subjectQuestions = mockTest.subjects.map(subject => {
       const questions = allQuestions.filter(q =>
         q.subjectId.toString() === subject._id.toString() &&
         q.classId.toString() === mockTest.class[0]._id.toString() &&
-        q.medium === mockTest.medium[0]  // assuming medium is an array
+        mockTest.medium.includes(q.medium)
       );
 
       return {
@@ -38,7 +37,7 @@ exports.getMockTestDetails = async (req, res) => {
       };
     });
 
-    // Step 4: Respond
+    // ✅ Return final response
     res.status(200).json({
       success: true,
       message: "Mock test fetched successfully",
@@ -52,6 +51,7 @@ exports.getMockTestDetails = async (req, res) => {
     res.status(500).json({ success: false, message: "Server error" });
   }
 };
+
 
 
 exports.getQuestionsBySubject = async (req, res) => {

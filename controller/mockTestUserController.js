@@ -4,6 +4,7 @@ const { successResponse, errorResponse } = require('../utils/responseHandler');
 
 const QuestionBank = require("../model/questionModel");
 const MockTest = require("../model/mockTestModel"); 
+const mongoose = require('mongoose');
 
 const Question = require('../model/questionModel');
 const SubQuestion = require('../model/subQuestionModel');
@@ -23,7 +24,7 @@ exports.getMockTestDetails = async (req, res) => {
     // 🧹 Load all questions (without mockTestId because it's removed)
     const allQuestions = await QuestionBank.find({});
 
-    // 🧠 Group questions by subject based on subjectId, classId and medium
+    //  Group questions by subject based on subjectId, classId and medium
     const subjectQuestions = mockTest.subjects.map(subject => {
       const questions = allQuestions.filter(q =>
         q.subjectId.toString() === subject._id.toString() &&
@@ -53,12 +54,10 @@ exports.getMockTestDetails = async (req, res) => {
 };
 
 
-
 exports.getQuestionsBySubject = async (req, res) => {
   try {
     const { mockTestId, subjectId } = req.params;
 
-  
     const mockTest = await MockTest.findById(mockTestId).populate('subjects');
 
     if (!mockTest) {
@@ -73,16 +72,17 @@ exports.getQuestionsBySubject = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Subject not found in this mock test' });
     }
 
+    // TEMP FIX: Remove mockTestId from filter
+    const questions = await Question.find({
+      subjectId: new mongoose.Types.ObjectId(subjectId)
+    }).lean();
 
-    const questions = await Question.find({ mockTestId, subjectId }).lean();
-
-  
     const formattedQuestions = await Promise.all(
       questions.map(async (q) => {
         const subQuestions = await SubQuestion.find({ questionId: q._id }).lean();
         return {
           questionId: q._id,
-          question: q.question,
+          question: q.questionText,
           options: q.options,
           questionType: q.questionType,
           typeOfQuestion: q.typeOfQuestion,
@@ -95,7 +95,6 @@ exports.getQuestionsBySubject = async (req, res) => {
       })
     );
 
-    // Step:4 => respond
     res.status(200).json({
       success: true,
       message: 'Questions fetched successfully',

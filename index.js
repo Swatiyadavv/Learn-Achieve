@@ -24,6 +24,7 @@ const studyMaterial = require('./routes/studyMaterialRoutes');
 const moduleRoutes = require('./routes/moduleRoutes');
 const topicRoutes = require('./routes/topicRoutes');
 const reviewerRoutes = require('./routes/reviewerRoutes');
+const mocktestResult = require('./routes/mockTestResultRoutes')
 const cors = require('cors')
 
 const app = express();
@@ -57,6 +58,8 @@ app.use('/api/study',studyMaterial);
 app.use('/api/module',moduleRoutes);
 app.use('/api/topic',topicRoutes);
 app.use('/api/reviewers',reviewerRoutes);
+app.use('/api/result',mocktestResult);
+
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);

@@ -63,7 +63,7 @@ exports.deleteModules = async (req, res) => {
       return res.status(400).json({ message: "Please provide module IDs in array" });
     }
 
-    const result = await Module.deleteMany({ _id: { $in: ids } });
+    const result = await Module.deleteOne({ _id: { $in: ids } });
     res.status(200).json({ message: `${result.deletedCount} module(s) deleted.` });
   } catch (err) {
     res.status(500).json({ message: "Error deleting modules" });

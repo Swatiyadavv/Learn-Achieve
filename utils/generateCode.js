@@ -5,7 +5,7 @@ const generateUniqueCode = async () => {
   let exists = true;
 
   while (exists) {
-    code = Math.floor(100000 + Math.random() * 900000).toString(); // 6-digit
+    code = Math.floor(100000 + Math.random() * 900000).toString(); 
     exists = await Coordinator.exists({ uniqueCode: code });
   }
 

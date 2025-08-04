@@ -92,7 +92,7 @@ exports.deleteTopic = async (req, res) => {
       return res.status(400).json({ message: "Please provide topicIds as a non-empty array" });
     }
 
-    const result = await Topic.deleteMany({ _id: { $in: topicIds } });
+    const result = await Topic.deleteOne({ _id: { $in: topicIds } });
 
     if (result.deletedCount === 0) {
       return res.status(404).json({ message: "No topics found to delete" });

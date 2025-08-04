@@ -21,7 +21,6 @@ exports.getMockTestDetails = async (req, res) => {
       return res.status(404).json({ success: false, message: "Mock test not found" });
     }
 
-    // 🧹 Load all questions (without mockTestId because it's removed)
     const allQuestions = await QuestionBank.find({});
 
     

@@ -4,7 +4,7 @@ const mockTestController = require("../controller/mockTestController");
 const { protect } = require("../middleware/authMiddleware");
 
 //  Create or Update mock test
-router.post("/add/", protect, mockTestController.createandUpdate);
+router.post("/add/", mockTestController.createandUpdate);
 
 //  Get All + Search + Pagination + Get By ID (combined)
 router.get("/list/:id?", mockTestController.getPaginatedOrSingleMockTest);

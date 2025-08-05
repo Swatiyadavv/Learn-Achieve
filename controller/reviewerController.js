@@ -1,8 +1,6 @@
 const reviewerService = require('../service/reviewerService');
 const { successResponse, errorResponse } = require('../utils/responseHandler');
 const Question = require('../model/questionModel');
-const questionService = require("../service/reviewerService");
-
 
 const getReviewQuestions = async (req, res) => {
   try {
@@ -18,9 +16,8 @@ const getReviewQuestions = async (req, res) => {
   } catch (err) {
     console.error(err);
     return errorResponse(res, 'Internal server error');
-  }  
+  }
 };
-
 
 const updateQuestion = async (req, res) => {
   try {
@@ -28,7 +25,7 @@ const updateQuestion = async (req, res) => {
     const updatedData = {
       ...req.body,
       reviewStatus: 'edited',
-      updatedBy: req.user?.email || 'system' // inject the logged-in email
+      updatedBy: req.user?.email || 'system'
     };
 
     const question = await Question.findByIdAndUpdate(id, updatedData, { new: true });
@@ -64,10 +61,6 @@ const approveQuestion = async (req, res) => {
   }
 };
 
-
-
-// const questionService = require("../services/questionService");
-
 const getReviewHistory = async (req, res) => {
   try {
     const filters = {
@@ -81,23 +74,17 @@ const getReviewHistory = async (req, res) => {
       offset: parseInt(req.query.offset) || 0
     };
 
-    const data = await questionService.getAllReviewHistory(filters);
+    const data = await reviewerService.getAllReviewHistory(filters);
 
-    res.status(200).json({
-      success: true,
-      message: "Review history fetched successfully",
+    return successResponse(res, "Review history fetched successfully", {
       total: data.total,
       data: data.questions
     });
   } catch (error) {
     console.error("Error in getReviewHistory:", error);
-    res.status(500).json({ success: false, message: "Internal server error" });
+    return errorResponse(res, "Internal server error", 500);
   }
 };
-
-// module.exports = { getReviewHistory };
-
-
 
 const deleteQuestion = async (req, res) => {
   try {
@@ -113,9 +100,13 @@ const deleteQuestion = async (req, res) => {
   } catch (err) {
     console.error(err);
     return errorResponse(res, 'Internal server error', 500);
-  } 
-
+  }
 };
 
-
-module.exports = { getReviewQuestions ,updateQuestion,deleteQuestion,approveQuestion,getReviewHistory};
+module.exports = {
+  getReviewQuestions,
+  updateQuestion,
+  deleteQuestion,
+  approveQuestion,
+  getReviewHistory
+};

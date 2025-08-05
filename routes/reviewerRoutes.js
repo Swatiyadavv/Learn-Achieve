@@ -9,6 +9,10 @@ router.get('/questions', reviewerController.getReviewQuestions);
 // PUT (Update)
 router.put('/questions/:id', reviewerController.updateQuestion);
 
+// Approve a question
+router.put('/questions/:id/approve', reviewerController.approveQuestion);
+
 // DELETE
-router.delete('/questions/:id', reviewerController.deleteQuestion);
+// router.delete('/questions/:id', reviewerController.deleteQuestion);
 module.exports = router;
+ 

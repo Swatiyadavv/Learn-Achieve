@@ -23,7 +23,10 @@ const getReviewQuestions = async (req, res) => {
 const updateQuestion = async (req, res) => {
   try {
     const { id } = req.params;
-    const updatedData = req.body;
+    const updatedData = {
+      ...req.body,
+      reviewStatus: 'edited' // always set to edited on update
+    };
 
     const question = await Question.findByIdAndUpdate(id, updatedData, { new: true });
 
@@ -37,6 +40,28 @@ const updateQuestion = async (req, res) => {
     return errorResponse(res, 'Internal server error', 500);
   }
 };
+
+const approveQuestion = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const question = await Question.findByIdAndUpdate(
+      id,
+      { reviewStatus: 'approved' },
+      { new: true }
+    );
+
+    if (!question) {
+      return errorResponse(res, 'Question not found', 404);
+    }
+
+    return successResponse(res, 'Question approved successfully', question);
+  } catch (err) {
+    console.error(err);
+    return errorResponse(res, 'Internal server error', 500);
+  }
+};
+
 const deleteQuestion = async (req, res) => {
   try {
     const { id } = req.params;
@@ -51,8 +76,9 @@ const deleteQuestion = async (req, res) => {
   } catch (err) {
     console.error(err);
     return errorResponse(res, 'Internal server error', 500);
-  }
+  } 
+
 };
 
 
-module.exports = { getReviewQuestions ,updateQuestion,deleteQuestion};
+module.exports = { getReviewQuestions ,updateQuestion,deleteQuestion,approveQuestion};

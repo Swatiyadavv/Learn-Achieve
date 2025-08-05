@@ -15,6 +15,11 @@ const questionBankSchema = new mongoose.Schema({
   questionText: { type: String },
   options: [{ type: String }],
   correctAnswer: { type: String },
+   reviewStatus: {
+    type: String,
+    enum: ["edited", "approved"],
+    default: "edited"
+  }
 }, { timestamps: true });
 
 questionBankSchema.index({

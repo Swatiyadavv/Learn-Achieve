@@ -15,7 +15,14 @@ const questionBankSchema = new mongoose.Schema({
   questionText: { type: String },
   options: [{ type: String }],
   correctAnswer: { type: String },
+    reviewStatus: {
+    type: String,
+    enum: ["edited", "approved"],
+    default: "edited"
+  }
 }, { timestamps: true });
+
+
 
 questionBankSchema.index({
   classId: 1, subjectId: 1, medium: 1, module: 1, topicName: 1,
@@ -23,3 +30,4 @@ questionBankSchema.index({
 }, { unique: true });
 
 module.exports = mongoose.model("QuestionReviewers", questionBankSchema);
+  

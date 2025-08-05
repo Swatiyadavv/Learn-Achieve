@@ -13,3 +13,4 @@ const getQuestions = async ({ classId, subjectId, medium }) => {
 };
 
 module.exports = { getQuestions };
+ 

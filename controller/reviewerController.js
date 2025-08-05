@@ -18,7 +18,7 @@ const getReviewQuestions = async (req, res) => {
   } catch (err) {
     console.error(err);
     return errorResponse(res, 'Internal server error');
-  }
+  } 
 };
 
 

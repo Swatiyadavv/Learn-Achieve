@@ -10,7 +10,11 @@ const questionBankSchema = new mongoose.Schema({
   topicName: { type: String, required: true },
   typeOfQuestion: { type: String, enum: ["General", "Comprehensive", "Poem"], required: true },
   questionType: { type: String, enum: ["Question Bank", "SAT Exam"], required: true },
-
+updatedBy: {
+  type: mongoose.Schema.Types.ObjectId,
+  ref: "Admin",
+   default: null
+},
   //  Only for General
   questionText: { type: String },
   options: [{ type: String }],

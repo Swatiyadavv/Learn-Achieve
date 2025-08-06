@@ -4,9 +4,6 @@ const Package = require('../model/Package');
 
 const packageService = {
 
-  /**
-   * Add or Update a Package
-   */
   addOrUpdatePackage: async (data, file) => {
     const {
       id,

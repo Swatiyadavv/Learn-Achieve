@@ -11,10 +11,11 @@ const packageSchema = new mongoose.Schema({
     required: true
   },
    className: {
-    type: String,
-    enum: ['Class 6', 'Class 7','Class 8','Class 9','Class 10','Class 11','Class 12'],
-    required: true
-  },
+  type: mongoose.Schema.Types.ObjectId,
+  ref: 'ClassMaster',
+  required: true
+},
+
   image: {
     type: String,
     required: true

@@ -1,4 +1,5 @@
 const packageService = require('../service/packageService');
+ const Package = require('../model/Package');
 
 const packageController = {
   //  Unified Add/Update Package
@@ -65,14 +66,32 @@ const packageController = {
     }
   },
 
-  getAllPackages: async (req, res) => {
-    try {
-      const all = await packageService.getAllPackages();
-      res.status(200).json(all);
-    } catch (err) {
-      res.status(500).json({ message: 'Error fetching packages', error: err.message });
-    }
-  },
+
+getAllPackages : async (req, res) => {
+  try {
+    const packages = await Package.find()
+      .populate({
+        path: 'mockTests',
+        populate: {
+          path: 'questions',
+          model: 'QuestionBank'
+        }
+      });
+
+    res.status(200).json({
+      success: true,
+      message: "Packages with MockTests and Questions fetched successfully",
+      data: packages
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: "Error fetching packages",
+      error: error.message
+    });
+  }
+},
+
 
   getPaginatedPackages: async (req, res) => {
     try {

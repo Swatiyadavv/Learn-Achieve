@@ -9,7 +9,7 @@ const packageService = {
       id,
       packageName,
       className,
-      SelectClass, // added
+      SelectClass, 
       medium,
       mockTests,
       numberOfAttempts,

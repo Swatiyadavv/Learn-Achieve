@@ -42,24 +42,28 @@ const updateQuestion = async (req, res) => {
 const approveQuestion = async (req, res) => {
   try {
     const { id } = req.params;
+    const { reviewStatus } = req.body; // status frontend se aayega
+
+    if (!reviewStatus) {
+      return errorResponse(res, 'reviewStatus is required in request body', 400);
+    }
 
     const question = await Question.findByIdAndUpdate(
       id,
-      {
-        reviewStatus: 'approved',
-        updatedBy: req.user?.email || 'system'
-      },
+      { reviewStatus },
       { new: true }
     );
 
     if (!question) return errorResponse(res, 'Question not found', 404);
 
-    return successResponse(res, 'Question approved successfully', question);
+    return successResponse(res, `Question ${reviewStatus} successfully`, question);
   } catch (err) {
     console.error(err);
     return errorResponse(res, 'Internal server error', 500);
   }
 };
+
+
 
 const getReviewHistory = async (req, res) => {
   try {

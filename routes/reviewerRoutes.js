@@ -10,7 +10,7 @@ router.get('/questions', reviewerController.getReviewQuestions);
 router.put('/questions/:id', reviewerController.updateQuestion);
 
 // Approve a question
-router.put('/questions/:id/approve', reviewerController.approveQuestion);
+router.put('/questions/approve/:id', reviewerController.approveQuestion);
 
 // Full review history with all filters and updatedBy email
 router.get('/questions/history', reviewerController.getReviewHistory);

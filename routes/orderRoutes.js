@@ -9,4 +9,7 @@ router.post('/place-selected',verifyUserToken, orderController.placeOrderWithSel
 // router.get('/invoice/:orderId',verifyUserToken, orderController.getInvoiceByOrderId);
 router.get('/myorders',verifyUserToken, orderController.getAllOrdersByUserId);
 
+router.get('/ordered-packages', verifyUserToken,orderController.getOrderedPackagesWithDetails);
+
+
 module.exports = router;

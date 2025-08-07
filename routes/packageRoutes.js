@@ -16,5 +16,8 @@ router.delete('/delete-multiple', verifyToken, packageController.deleteMultipleP
 
 router.patch('/toggle/:id', verifyToken, packageController.togglePackageStatus);
 
+
+
+// router.get('/view/:packageId',verifyToken, packageController.getPackageWithMockTests);
 module.exports = router;   
 

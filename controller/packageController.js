@@ -1,6 +1,12 @@
 const packageService = require('../service/packageService');
  const Package = require('../model/Package');
-
+ const mongoose = require('mongoose');
+const SubQuestion = require('../model/subQuestionModel'); 
+const QuestionBank = require('../model/questionModel');
+const { Types } = require('mongoose');
+const ObjectId = require('mongoose').Types.ObjectId;
+// const Package = require('../model/Package'); // Your Package model
+const Order = require('../model/Order'); 
 const packageController = {
   //  Unified Add/Update Package
   addOrUpdatePackage: async (req, res) => {
@@ -67,7 +73,7 @@ const packageController = {
   },
 
 
-getAllPackages : async (req, res) => {
+ getAllPackages : async (req, res) => {
   try {
     const packages = await Package.find()
       .populate({
@@ -76,7 +82,47 @@ getAllPackages : async (req, res) => {
           path: 'questions',
           model: 'QuestionBank'
         }
-      });
+      })
+      .lean(); // use lean for better performance
+
+    for (let pkg of packages) {
+      for (let mockTest of pkg.mockTests) {
+
+        // 🔁 If no questions are assigned, randomly fetch 3 per subject
+        if (!mockTest.questions || mockTest.questions.length === 0) {
+          mockTest.questions = [];
+
+          for (let subjectId of mockTest.subjects) {
+            const subjectQuestions = await QuestionBank.aggregate([
+              {
+                $match: {
+                  subjectId: new mongoose.Types.ObjectId(subjectId),
+                  status: 'active'
+                }
+              },
+              { $sample: { size: 3 } }
+            ]);
+
+            mockTest.questions.push(...subjectQuestions);
+          }
+        }
+
+        //  Attach subQuestions to Poem or Comprehensive questions
+        for (let i = 0; i < mockTest.questions.length; i++) {
+          const question = mockTest.questions[i];
+
+          // If question has type and matches, fetch subQuestions
+          if (question.typeOfQuestion === 'Poem' || question.typeOfQuestion === 'Comprehensive') {
+            const subQuestions = await SubQuestion.find({ parentId: question._id }).lean();
+
+            mockTest.questions[i] = {
+              ...question,
+              subQuestions
+            };
+          }
+        }
+      }
+    }
 
     res.status(200).json({
       success: true,
@@ -91,6 +137,112 @@ getAllPackages : async (req, res) => {
     });
   }
 },
+
+ 
+// getPackageWithMockTests: async (req, res) => {
+//     try {
+//       const packageId = req.params.id;
+//       const userId = req.user?.id || req.user?._id;
+
+//       console.log("📥 Received packageId:", packageId);
+
+//       if (!packageId || !mongoose.Types.ObjectId.isValid(packageId)) {
+//         return res.status(400).json({
+//           success: false,
+//           message: "Invalid package ID format",
+//         });
+//       }
+
+//       if (!userId) {
+//         return res.status(401).json({
+//           success: false,
+//           message: "Unauthorized: user ID missing",
+//         });
+//       }
+
+//       console.log("➡️ userId:", userId);
+//       console.log("➡️ packageId (from params):", packageId);
+
+//       const isPurchased = await Order.findOne({
+//         userId: new mongoose.Types.ObjectId(userId),
+//         'packages.packageId': new mongoose.Types.ObjectId(packageId),
+//       });
+
+//       console.log("📦 isPurchased result:", isPurchased);
+
+//       if (!isPurchased) {
+//         return res.status(403).json({
+//           success: false,
+//           message: "Access denied. Please purchase the package to view its content.",
+//         });
+//       }
+
+//       const packageData = await Package.findById(packageId)
+//         .populate({
+//           path: 'mockTests',
+//           populate: {
+//             path: 'questions',
+//             model: 'QuestionBank'
+//           }
+//         })
+//         .lean();
+
+//       if (!packageData) {
+//         return res.status(404).json({
+//           success: false,
+//           message: "Package not found"
+//         });
+//       }
+
+//       for (let mockTest of packageData.mockTests) {
+//         if (!mockTest.questions || mockTest.questions.length === 0) {
+//           mockTest.questions = [];
+
+//           for (let subjectId of mockTest.subjects) {
+//             const subjectQuestions = await QuestionBank.aggregate([
+//               {
+//                 $match: {
+//                   subjectId: new mongoose.Types.ObjectId(subjectId),
+//                   status: 'active'
+//                 }
+//               },
+//               { $sample: { size: 3 } }
+//             ]);
+
+//             mockTest.questions.push(...subjectQuestions);
+//           }
+//         }
+
+//         for (let i = 0; i < mockTest.questions.length; i++) {
+//           const question = mockTest.questions[i];
+
+//           if (question.typeOfQuestion === 'Poem' || question.typeOfQuestion === 'Comprehensive') {
+//             const subQuestions = await SubQuestion.find({ parentId: question._id }).lean();
+
+//             mockTest.questions[i] = {
+//               ...question,
+//               subQuestions
+//             };
+//           }
+//         }
+//       }
+
+//       return res.status(200).json({
+//         success: true,
+//         message: "Purchased package with mock tests and questions fetched successfully",
+//         data: packageData
+//       });
+
+//     } catch (err) {
+//       console.error("❌ Error fetching package with mock tests:", err);
+//       res.status(500).json({
+//         success: false,
+//         message: "Server error",
+//         error: err.message
+//       });
+//     }
+//   },
+
 
 
   getPaginatedPackages: async (req, res) => {

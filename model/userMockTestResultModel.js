@@ -17,6 +17,7 @@ const mockTestResultSchema = new mongoose.Schema({
   wrong: Number,
   unattempted: Number,
   totalMarks: Number,
+    attemptNumber: Number ,
   responses: [responseSchema],
 }, { timestamps: true });
 

@@ -23,7 +23,9 @@ updatedBy: {
     type: String,
     enum: ["edited", "approved"],
     default: "edited"
-  }
+  },
+  
+    updatedBy: { type: String } 
 }, { timestamps: true });
 
 questionBankSchema.index({

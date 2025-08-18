@@ -21,7 +21,6 @@
   }
 },
 
-
     loginStep1: async (req, res) => {
       try {
         const result = await adminService.loginAdminStep1(req.body);

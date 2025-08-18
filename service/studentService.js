@@ -5,6 +5,94 @@ const generatePassword = require("../utils/passwordUtils");
 const sendMail = require("../utils/sendMail");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const Coordinator = require("../model/coordinatorModel");
+const Order = require("../model/Order");
+
+
+// Get all students
+
+exports.getAllStudents = async () => {
+  const coordinators = await Coordinator.find({ isActive: true }).select("-password"); // optional: hide sensitive fields
+  return coordinators;
+};
+// Get students by date range
+exports.getStudentsByDate = async (from, to) => {
+  return await Student.find({
+    createdAt: { $gte: new Date(from), $lte: new Date(to) }
+  });
+};
+
+// Pagination + search
+exports.getStudentsPaginated = async ({ search = "", limit = 10, offset = 0 }) => {
+  const query = search
+    ? { $or: [
+        { firstName: { $regex: search, $options: "i" } },
+        { lastName: { $regex: search, $options: "i" } },
+        { "contactDetails.email": { $regex: search, $options: "i" } }
+      ]}
+    : {};
+
+  const total = await Student.countDocuments(query);
+  const students = await Student.find(query)
+    .skip(offset)
+    .limit(limit)
+    .sort({ createdAt: -1 });
+
+  return { total, students };
+};
+
+
+
+
+exports.getStudentEarnings = async () => {
+  const students = await Student.find();
+  let totalEarned = 0;
+  let totalDiscount = 0;
+  let totalBalance = 0;
+
+  const studentData = await Promise.all(
+    students.map(async (student) => {
+      const orders = await Order.find({ userId: student._id });
+      let actualPrice = 0;
+      let paymentReceived = 0;
+      let discountGiven = 0;
+      let balance = 0;
+
+      orders.forEach(order => {
+        actualPrice += order.totalAmount + order.discountAmt;
+        paymentReceived += order.totalAmount;
+        discountGiven += order.discountAmt;
+        balance += (order.totalAmount + order.discountAmt) - order.totalAmount;
+      });
+
+      totalEarned += paymentReceived;
+      totalDiscount += discountGiven;
+      totalBalance += balance;
+
+      return {
+        name: student.name,
+        actualPrice,
+        paymentReceived,
+        discountGiven,
+        balance
+      };
+    })
+  );
+
+  return {
+    totalStudents: students.length,
+    totalEarned,
+    totalDiscount,
+    totalBalance,
+    students: studentData
+  };
+};
+
+
+
+
+
+
 
 //  Register Student - Step 1
 exports.registerStudent = async (data) => {

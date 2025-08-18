@@ -16,7 +16,9 @@ const orderController = {
         return res.status(400).json({ message: 'User ID not found in request' });
       }
 
-      const order = await orderService.placeOrderFromCart(userId);
+      // const order = await orderService.placeOrderFromCart(userId);
+      const order = await orderService.placeOrderFromCart(userId, req.body.referralCode);
+
       res.status(201).json({ message: 'Order placed from cart successfully', order });
     } catch (err) {
       res.status(400).json({ message: err.message });

@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
 const contactDetailsSchema = new mongoose.Schema({
   email: { type: String, required: true },
@@ -20,41 +20,22 @@ const studentSchema = new mongoose.Schema({
   medium: String,
   class: String,
   schoolName: String,
-
   registerBy: {
     type: String,
     enum: ["Student", "Coordinator"],
     required: true
   },
-
-  uniqueCode: {
-    type: String,
-    validate: {
-      validator: function (v) {
-        return this.registerBy !== 'Coordinator' || (v && v.trim().length > 0);
-      },
-      message: "Unique code is required when registered by a Coordinator."
-    }
-  },
-
-  contactDetails: {
-    type: contactDetailsSchema,
-    required: true,
-    validate: {
-      validator: function (v) {
-        if (v.state === "Madhya Pradesh") {
-          return v.district && v.taluka && v.pinCode;
-        }
-        return true;
-      },
-      message: "District, Taluka, and Pin Code are required when state is Madhya Pradesh."
-    }
-  },
-
-  password: String, // hashed
+  uniqueCode: String,
+  contactDetails: contactDetailsSchema,
+  password: String,
   otp: String,
-  otpExpiry: Date
+  otpExpiry: Date,
 
+  // Payment / discount / package fields
+    packageId: { type: mongoose.Schema.Types.ObjectId, ref: "Package" }, 
+  totalAmount: { type: Number, default: 0 },          // Package total
+  discountGiven: { type: Number, default: 0 },       // Discount applied
+  paymentReceived: { type: Number, default: 0 },     // Amount received
 }, { timestamps: true });
 
 module.exports = mongoose.model("Student", studentSchema);

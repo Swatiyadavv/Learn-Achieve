@@ -3,12 +3,58 @@ const Package = require('../model/Package');
 const Order = require('../model/Order');
 const moment = require('moment');
 const crypto = require('crypto');
-const placeOrderFromCart = async (userId) => {
+
+const AdminReferral = require('../model/adminReferral')
+const Coordinator = require('../model/coordinatorModel');
+// const placeOrderFromCart = async (userId) => {
+//   const cart = await Cart.findOne({ userId }).populate('packages.packageId');
+//   if (!cart || cart.packages.length === 0) {
+//     throw new Error('Cart is empty');
+//   }
+
+//   const orderPackages = cart.packages.map(item => {
+//     const pkg = item.packageId;
+//     const finalPrice = pkg.finalPrice || 0;
+//     const discount = pkg.discountPrice || 0;
+//     const originalPrice = finalPrice + discount;
+
+//     return {
+//       packageId: pkg._id,
+//       quantity: item.quantity || 1,
+//       priceAtOrder: finalPrice,
+//       discountAtOrder: discount,
+//       originalPrice
+//     };
+//   });
+
+//   const totalAmount = orderPackages.reduce((sum, item) =>
+//     sum + (item.quantity * item.priceAtOrder), 0
+//   );
+
+//   const discountAmt = orderPackages.reduce((sum, item) =>
+//     sum + (item.quantity * item.discountAtOrder), 0
+//   );
+
+//   const order = new Order({
+//     userId,
+//     packages: orderPackages,
+//     totalAmount,
+//     discountAmt
+//   });
+
+//   await order.save();
+//   await Cart.deleteOne({ _id: cart._id }); // Clear cart
+
+//   return order;
+// };
+
+const placeOrderFromCart = async (userId, referralCode) => {
   const cart = await Cart.findOne({ userId }).populate('packages.packageId');
   if (!cart || cart.packages.length === 0) {
     throw new Error('Cart is empty');
   }
 
+  // Prepare package details
   const orderPackages = cart.packages.map(item => {
     const pkg = item.packageId;
     const finalPrice = pkg.finalPrice || 0;
@@ -24,7 +70,8 @@ const placeOrderFromCart = async (userId) => {
     };
   });
 
-  const totalAmount = orderPackages.reduce((sum, item) =>
+  // Calculate totals
+  const totalAmountBeforeReferral = orderPackages.reduce((sum, item) =>
     sum + (item.quantity * item.priceAtOrder), 0
   );
 
@@ -32,11 +79,45 @@ const placeOrderFromCart = async (userId) => {
     sum + (item.quantity * item.discountAtOrder), 0
   );
 
+  // **Referral logic** (Admin + Coordinator)
+  let referralDiscount = 0;
+
+  if (referralCode) {
+    // Check AdminReferral first
+    let referral = await AdminReferral.findOne({ code: referralCode, isActive: true });
+
+    // If not found in AdminReferral, check Coordinator uniqueCode
+    if (!referral) {
+      const coordinator = await Coordinator.findOne({ uniqueCode: referralCode, isActive: true });
+      if (coordinator) {
+        // Example: fixed 500 discount for coordinator code
+        referral = { discountType: 'flat', discountValue: 500 };
+      }
+    }
+
+    if (!referral) {
+      throw new Error('Invalid referral code');
+    }
+
+    if (referral.discountType === 'flat') {
+      referralDiscount = referral.discountValue;
+    } else if (referral.discountType === 'percent') {
+      referralDiscount = (totalAmountBeforeReferral * referral.discountValue) / 100;
+    }
+  }
+
+  // Final amount after referral discount
+  let finalAmount = totalAmountBeforeReferral - referralDiscount;
+  if (finalAmount < 0) finalAmount = 0;
+
+  // Create order
   const order = new Order({
     userId,
     packages: orderPackages,
-    totalAmount,
-    discountAmt
+    totalAmount: finalAmount,
+    discountAmt,
+    referralCode: referralCode || null,
+    referralDiscount: referralDiscount.toFixed(2)
   });
 
   await order.save();
@@ -44,6 +125,8 @@ const placeOrderFromCart = async (userId) => {
 
   return order;
 };
+
+
 
 const placeOrderWithSelectedPackages = async (userId, packageIds) => {
   const packages = await Package.find({ _id: { $in: packageIds } });

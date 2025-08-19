@@ -11,5 +11,5 @@ router.get('/myorders',verifyUserToken, orderController.getAllOrdersByUserId);
 
 router.get('/ordered-packages', verifyUserToken,orderController.getOrderedPackagesWithDetails);
 
-
+router.get('/student-earnings',verifyUserToken, orderController.getStudentEarnings);
 module.exports = router;

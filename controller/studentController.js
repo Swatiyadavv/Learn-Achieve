@@ -55,14 +55,17 @@ exports.getStudentsPaginate = async (req, res) => {
 };
 
 // 4️⃣ Earnings summary
-exports.getStudentEarnings = async (req, res) => {
+ exports.getStudentEarnings = async (req, res) => {
   try {
-    const result = await studentService.getStudentEarnings();
-    res.status(200).json(result);
+  const earnings = await studentService.getStudentEarnings(req.user._id);
+
+
+    res.status(200).json(earnings);
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(400).json({ message: err.message });
   }
 };
+
 
 
 

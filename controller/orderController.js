@@ -7,7 +7,16 @@ const SubQuestion = require('../model/subQuestionModel');
 const mongoose = require('mongoose');
 const Order = require('../model/Order');
 const orderController = {
-  //  Place order from cart
+
+  getStudentEarnings : async (req, res) => {
+  try {
+    const userId = req.params.userId;
+    const earnings = await orderService.getStudentEarnings(userId);
+    res.status(200).json(earnings);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+},  //  Place order from cart
   placeOrderFromCart: async (req, res) => {
     try {
       const userId = req.user.id;

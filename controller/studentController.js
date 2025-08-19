@@ -1,56 +1,81 @@
-
 const studentService = require("../service/studentService");
 const Student = require("../model/studentModel");
 
 
-exports.getAllStudents = async (req, res) => {
+// Student create withdrawal request
+exports.createWithdrawal = async (req, res) => {
   try {
-    const coordinators = await studentService.getAllStudents();
-    res.status(200).json({ total: coordinators.length, coordinators });
+    const studentId = req.user.id;   // token se aa raha hai
+    const { amount } = req.body;
+
+    if (!amount) {
+      return res.status(400).json({ message: "Amount required" });
+    }
+
+    const withdrawal = await studentService.createWithdrawal(studentId, amount);
+
+    res.status(201).json({
+      message: "Withdrawal request created",
+      withdrawal,
+    });
   } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(400).json({ message: err.message });
   }
 };
-// 2️⃣ Get students by date range
-exports.getStudentsByDate = async (req, res) => {
-  try {
-    const { from, to } = req.query;
-    if (!from || !to) return res.status(400).json({ message: "from and to dates required" });
 
-    const students = await Student.find({
-      createdAt: { $gte: new Date(from), $lte: new Date(to) }
+// Admin update withdrawal status
+exports.getWithdrawalRequests = async (req, res) => {
+  try {
+    const studentId = req.user.id; // token se Student._id
+    const withdrawals = await studentService.getWithdrawalRequests(studentId);
+
+    res.status(200).json({ success: true, withdrawals });
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+};
+
+exports.getStudents = async (req, res) => {
+  try {
+    let { from, to, search, limit, offset } = req.query;
+
+    // 🔹 Validation
+    if (limit && isNaN(limit)) {
+      return res.status(400).json({ message: "limit must be a number" });
+    }
+    if (offset && isNaN(offset)) {
+      return res.status(400).json({ message: "offset must be a number" });
+    }
+    if ((from && !to) || (!from && to)) {
+      return res.status(400).json({ message: "both from and to dates are required" });
+    }
+    if (from && to && new Date(from) > new Date(to)) {
+      return res.status(400).json({ message: "from date cannot be greater than to date" });
+    }
+
+    // Defaults
+    limit = limit ? parseInt(limit) : 10;
+    offset = offset ? parseInt(offset) : 0;
+
+    // 🔹 Call Service
+    const result = await studentService.getStudents({
+      from,
+      to,
+      search,
+      limit,
+      offset,
     });
 
-    res.status(200).json({ total: students.length, students });
+    // 🔹 Response
+    res.status(200).json({
+      success: true,
+      total: result.total,
+      limit,
+      offset,
+      students: result.students,
+    });
   } catch (err) {
-    res.status(500).json({ message: err.message });
-  }
-};
-
-// 3️⃣ Pagination + search
-exports.getStudentsPaginate = async (req, res) => {
-  try {
-    let { limit = 10, offset = 0, search = "" } = req.query;
-    limit = parseInt(limit);
-    offset = parseInt(offset);
-
-    const query = search
-      ? { $or: [
-          { "firstName": { $regex: search, $options: "i" } },
-          { "lastName": { $regex: search, $options: "i" } },
-          { "contactDetails.email": { $regex: search, $options: "i" } }
-        ]}
-      : {};
-
-    const total = await Student.countDocuments(query);
-    const students = await Student.find(query)
-      .skip(offset)
-      .limit(limit)
-      .sort({ createdAt: -1 });
-
-    res.status(200).json({ total, students });
-  } catch (err) {
-    res.status(500).json({ message: err.message });
+    res.status(500).json({ success: false, message: err.message });
   }
 };
 
@@ -65,9 +90,6 @@ exports.getStudentsPaginate = async (req, res) => {
     res.status(400).json({ message: err.message });
   }
 };
-
-
-
 
 exports.registerStudent = async (req, res) => {
   try {

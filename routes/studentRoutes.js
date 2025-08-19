@@ -8,10 +8,18 @@ router.post("/verify", studentController.verifyStudentOTP);
 router.post("/login", studentController.loginRequestStudent);
 router.post("/login/verify", studentController.loginVerifyStudent);
 
-// Admin-side student APIs
-router.get("/all", studentController.getAllStudents);
-router.get("/date-range", studentController.getStudentsByDate);
-router.get("/paginated", studentController.getStudentsPaginate);
+
+
+// Student request banayega
+router.post("/", verifyUserToken ,studentController.createWithdrawal);
+router.get("/status", verifyUserToken, studentController.getWithdrawalRequests);
+
+
+
+// Single universal API get all serach pagination 
+router.get("/students", studentController.getStudents);
+
+
 // router.get("/earnings", studentController.getStudentEarnings);
 router.get("/earnings", verifyUserToken,studentController.getStudentEarnings);
 

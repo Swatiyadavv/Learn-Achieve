@@ -52,7 +52,7 @@ app.use('/api/subject', subjectRoutes);
 app.use('/api/author', authorRoutes);
 app.use("/api/AddBlogs", blogRoutes);
 app.use('/api/invoice', invoiceRoutes);
-app.use('/api/student',studentRoutes);
+app.use('/api/student',studentRoutes);  
 app.use('/api/coordinators', coordinatorRoutes);
 app.use('/api/study',studyMaterial);
 app.use('/api/module',moduleRoutes);

@@ -1,4 +1,5 @@
 const PendingStudent = require("../model/PendingStudent");
+const mongoose = require('mongoose');
 const Student = require("../model/studentModel");
 const generateOTP = require("../utils/generateOtp");
 const generatePassword = require("../utils/passwordUtils");
@@ -7,7 +8,6 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const Coordinator = require("../model/coordinatorModel");
 const Order = require("../model/Order");
-
 
 // Get all students
 
@@ -44,51 +44,69 @@ exports.getStudentsPaginated = async ({ search = "", limit = 10, offset = 0 }) =
 
 
 
-exports.getStudentEarnings = async () => {
-  const students = await Student.find();
+
+
+
+// exports.getStudentEarnings = async (userId) => {
+//   const orders = await Order.find({ userId });
+
+//   let totalEarned = 0;
+//   let totalDiscount = 0;
+//   let totalBalance = 0;
+
+//   orders.forEach(order => {
+//     totalEarned += order.totalAmount;
+//     totalDiscount += order.discountAmt + Number(order.referralDiscount || 0);
+//     totalBalance += order.packages.reduce(
+//       (sum, pkg) => sum + ((pkg.originalPrice - pkg.priceAtOrder) * pkg.quantity), 0
+//     );
+//   });
+
+//   return {
+//     totalStudents: orders.length,
+//     totalEarned,
+//     totalDiscount,
+//     totalBalance,
+//     students: orders.map(order => ({
+//       actualPrice: order.totalAmount + order.discountAmt + Number(order.referralDiscount || 0),
+//       paymentReceived: order.totalAmount,
+//       discountGiven: order.discountAmt + Number(order.referralDiscount || 0),
+//       balance: order.packages.reduce(
+//         (sum, pkg) => sum + ((pkg.originalPrice - pkg.priceAtOrder) * pkg.quantity), 0
+//       )
+//     }))
+//   };
+// };
+exports.getStudentEarnings = async (userId) => {
+  const orders = await Order.find({ userId });
+
   let totalEarned = 0;
   let totalDiscount = 0;
   let totalBalance = 0;
 
-  const studentData = await Promise.all(
-    students.map(async (student) => {
-      const orders = await Order.find({ userId: student._id });
-      let actualPrice = 0;
-      let paymentReceived = 0;
-      let discountGiven = 0;
-      let balance = 0;
-
-      orders.forEach(order => {
-        actualPrice += order.totalAmount + order.discountAmt;
-        paymentReceived += order.totalAmount;
-        discountGiven += order.discountAmt;
-        balance += (order.totalAmount + order.discountAmt) - order.totalAmount;
-      });
-
-      totalEarned += paymentReceived;
-      totalDiscount += discountGiven;
-      totalBalance += balance;
-
-      return {
-        name: student.name,
-        actualPrice,
-        paymentReceived,
-        discountGiven,
-        balance
-      };
-    })
-  );
+  orders.forEach(order => {
+    totalEarned += order.totalAmount;
+    totalDiscount += order.discountAmt + Number(order.referralDiscount || 0);
+    totalBalance += order.packages.reduce(
+      (sum, pkg) => sum + ((pkg.originalPrice - pkg.priceAtOrder) * pkg.quantity), 0
+    );
+  });
 
   return {
-    totalStudents: students.length,
+    totalStudents: 1, // kyunki yeh single userId ka data hai
     totalEarned,
     totalDiscount,
     totalBalance,
-    students: studentData
+    students: [
+      {
+        actualPrice: totalEarned + totalDiscount,
+        paymentReceived: totalEarned,
+        discountGiven: totalDiscount,
+        balance: totalBalance
+      }
+    ]
   };
 };
-
-
 
 
 

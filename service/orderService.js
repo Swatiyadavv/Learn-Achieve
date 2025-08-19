@@ -6,12 +6,46 @@ const crypto = require('crypto');
 
 const AdminReferral = require('../model/adminReferral')
 const Coordinator = require('../model/coordinatorModel');
-// const placeOrderFromCart = async (userId) => {
+const getStudentEarnings = async (userId) => {
+  const orders = await Order.find({ userId });
+
+  let totalEarned = 0;
+  let totalDiscount = 0;
+  let totalBalance = 0;
+
+  orders.forEach(order => {
+    totalEarned += order.totalAmount;
+    totalDiscount += order.discountAmt + Number(order.referralDiscount || 0);
+    totalBalance += order.packages.reduce(
+      (sum, pkg) => sum + ((pkg.originalPrice - pkg.priceAtOrder) * pkg.quantity), 0
+    );
+  });
+
+  return {
+    totalStudents: 1, // sirf ek student
+    totalEarned,
+    totalDiscount,
+    totalBalance,
+    students: [
+      {
+        actualPrice: totalEarned + totalDiscount,
+        paymentReceived: totalEarned,
+        discountGiven: totalDiscount,
+        balance: totalBalance
+      }
+    ]
+  };
+};
+
+
+
+// const placeOrderFromCart = async (userId, referralCode) => {
 //   const cart = await Cart.findOne({ userId }).populate('packages.packageId');
 //   if (!cart || cart.packages.length === 0) {
 //     throw new Error('Cart is empty');
 //   }
 
+//   // Prepare package details
 //   const orderPackages = cart.packages.map(item => {
 //     const pkg = item.packageId;
 //     const finalPrice = pkg.finalPrice || 0;
@@ -27,7 +61,8 @@ const Coordinator = require('../model/coordinatorModel');
 //     };
 //   });
 
-//   const totalAmount = orderPackages.reduce((sum, item) =>
+//   // Calculate totals
+//   const totalAmountBeforeReferral = orderPackages.reduce((sum, item) =>
 //     sum + (item.quantity * item.priceAtOrder), 0
 //   );
 
@@ -35,11 +70,45 @@ const Coordinator = require('../model/coordinatorModel');
 //     sum + (item.quantity * item.discountAtOrder), 0
 //   );
 
+//   // **Referral logic** (Admin + Coordinator)
+//   let referralDiscount = 0;
+
+//   if (referralCode) {
+//     // Check AdminReferral first
+//     let referral = await AdminReferral.findOne({ code: referralCode, isActive: true });
+
+//     // If not found in AdminReferral, check Coordinator uniqueCode
+//     if (!referral) {
+//       const coordinator = await Coordinator.findOne({ uniqueCode: referralCode, isActive: true });
+//       if (coordinator) {
+//         // Example: fixed 500 discount for coordinator code
+//         referral = { discountType: 'flat', discountValue: 500 };
+//       }
+//     }
+
+//     if (!referral) {
+//       throw new Error('Invalid referral code');
+//     }
+
+//     if (referral.discountType === 'flat') {
+//       referralDiscount = referral.discountValue;
+//     } else if (referral.discountType === 'percent') {
+//       referralDiscount = (totalAmountBeforeReferral * referral.discountValue) / 100;
+//     }
+//   }
+
+//   // Final amount after referral discount
+//   let finalAmount = totalAmountBeforeReferral - referralDiscount;
+//   if (finalAmount < 0) finalAmount = 0;
+
+//   // Create order
 //   const order = new Order({
 //     userId,
 //     packages: orderPackages,
-//     totalAmount,
-//     discountAmt
+//     totalAmount: finalAmount,
+//     discountAmt,
+//     referralCode: referralCode || null,
+//     referralDiscount: referralDiscount.toFixed(2)
 //   });
 
 //   await order.save();
@@ -70,6 +139,18 @@ const placeOrderFromCart = async (userId, referralCode) => {
     };
   });
 
+  // ❌ Check: user has already purchased same package or not
+  for (let item of orderPackages) {
+    const alreadyOrdered = await Order.findOne({
+      userId,
+      "packages.packageId": item.packageId
+    });
+
+    if (alreadyOrdered) {
+      throw new Error(`Package already purchased by this user`);
+    }
+  }
+
   // Calculate totals
   const totalAmountBeforeReferral = orderPackages.reduce((sum, item) =>
     sum + (item.quantity * item.priceAtOrder), 0
@@ -79,18 +160,14 @@ const placeOrderFromCart = async (userId, referralCode) => {
     sum + (item.quantity * item.discountAtOrder), 0
   );
 
-  // **Referral logic** (Admin + Coordinator)
+  // Referral logic
   let referralDiscount = 0;
-
   if (referralCode) {
-    // Check AdminReferral first
     let referral = await AdminReferral.findOne({ code: referralCode, isActive: true });
 
-    // If not found in AdminReferral, check Coordinator uniqueCode
     if (!referral) {
       const coordinator = await Coordinator.findOne({ uniqueCode: referralCode, isActive: true });
       if (coordinator) {
-        // Example: fixed 500 discount for coordinator code
         referral = { discountType: 'flat', discountValue: 500 };
       }
     }
@@ -280,5 +357,6 @@ module.exports = {
   placeOrderFromCart,
   placeOrderWithSelectedPackages,
   getInvoiceByOrderId,
-  getAllOrdersByUserId
+  getAllOrdersByUserId,
+  getStudentEarnings
 };

@@ -8,31 +8,60 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const Coordinator = require("../model/coordinatorModel");
 const Order = require("../model/Order");
+const Withdrawal = require("../model/withdrawalModel");
+// ✅ Student Add Service
 
-// Get all students
 
-exports.getAllStudents = async () => {
-  const coordinators = await Coordinator.find({ isActive: true }).select("-password"); // optional: hide sensitive fields
-  return coordinators;
-};
-// Get students by date range
-exports.getStudentsByDate = async (from, to) => {
-  return await Student.find({
-    createdAt: { $gte: new Date(from), $lte: new Date(to) }
-  });
+// Student request create karega
+exports.createWithdrawal = async (studentId, amount) => {
+  if (!studentId || !amount) throw new Error("studentId and amount required");
+
+  const withdrawal = new Withdrawal({ studentId, amount });
+  return await withdrawal.save();
 };
 
-// Pagination + search
-exports.getStudentsPaginated = async ({ search = "", limit = 10, offset = 0 }) => {
-  const query = search
-    ? { $or: [
-        { firstName: { $regex: search, $options: "i" } },
-        { lastName: { $regex: search, $options: "i" } },
-        { "contactDetails.email": { $regex: search, $options: "i" } }
-      ]}
-    : {};
+// Admin update karega
 
+
+// Student / Coordinator view-only withdrawals
+
+
+exports.getWithdrawalRequests = async (studentId) => {
+  if (!studentId) throw new Error("studentId required");
+
+  const withdrawals = await Withdrawal.find({ studentId })
+    .sort({ createdAt: -1 });
+
+  // Sirf status return karwana hai
+  return withdrawals.map(w => ({
+    id: w._id,
+    status: w.status
+  }));
+};
+
+
+
+
+exports.getStudents = async ({ from, to, search = "", limit, offset }) => {
+  let query = {};
+
+  // 🔹 Date range filter
+  if (from && to) {
+    query.createdAt = { $gte: new Date(from), $lte: new Date(to) };
+  }
+
+  // 🔹 Search filter
+  if (search) {
+    query.$or = [
+      { firstName: { $regex: search, $options: "i" } },
+      { lastName: { $regex: search, $options: "i" } },
+      { "contactDetails.email": { $regex: search, $options: "i" } }
+    ];
+  }
+
+  // 🔹 Count + Pagination
   const total = await Student.countDocuments(query);
+
   const students = await Student.find(query)
     .skip(offset)
     .limit(limit)
@@ -43,40 +72,6 @@ exports.getStudentsPaginated = async ({ search = "", limit = 10, offset = 0 }) =
 
 
 
-
-
-
-
-// exports.getStudentEarnings = async (userId) => {
-//   const orders = await Order.find({ userId });
-
-//   let totalEarned = 0;
-//   let totalDiscount = 0;
-//   let totalBalance = 0;
-
-//   orders.forEach(order => {
-//     totalEarned += order.totalAmount;
-//     totalDiscount += order.discountAmt + Number(order.referralDiscount || 0);
-//     totalBalance += order.packages.reduce(
-//       (sum, pkg) => sum + ((pkg.originalPrice - pkg.priceAtOrder) * pkg.quantity), 0
-//     );
-//   });
-
-//   return {
-//     totalStudents: orders.length,
-//     totalEarned,
-//     totalDiscount,
-//     totalBalance,
-//     students: orders.map(order => ({
-//       actualPrice: order.totalAmount + order.discountAmt + Number(order.referralDiscount || 0),
-//       paymentReceived: order.totalAmount,
-//       discountGiven: order.discountAmt + Number(order.referralDiscount || 0),
-//       balance: order.packages.reduce(
-//         (sum, pkg) => sum + ((pkg.originalPrice - pkg.priceAtOrder) * pkg.quantity), 0
-//       )
-//     }))
-//   };
-// };
 exports.getStudentEarnings = async (userId) => {
   const orders = await Order.find({ userId });
 

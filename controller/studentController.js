@@ -1,7 +1,6 @@
 const studentService = require("../service/studentService");
 const Student = require("../model/studentModel");
-// const studentService = require("../service/studentService");
-// const withdrawalService = require("../model/withdrawalModel");
+
 
 // Student create withdrawal request
 exports.createWithdrawal = async (req, res) => {
@@ -35,7 +34,6 @@ exports.getWithdrawalRequests = async (req, res) => {
     res.status(400).json({ message: err.message });
   }
 };
-
 
 exports.getStudents = async (req, res) => {
   try {

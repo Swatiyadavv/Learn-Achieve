@@ -3,6 +3,8 @@ const mongoose = require("mongoose");
 
 const responseSchema = new mongoose.Schema({
   questionId: { type: mongoose.Schema.Types.ObjectId, ref: "QuestionBank", required: true },
+subQuestionId: { type: mongoose.Schema.Types.ObjectId, ref: 'SubQuestion' },
+
   selectedOption: { type: String },
   isCorrect: { type: Boolean },
   correctAnswer: { type: String },

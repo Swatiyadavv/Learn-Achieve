@@ -7,6 +7,6 @@ const { verifyUserToken } = require('../middleware/userAuth');
 // Submit mock test
 router.post('/mocktest/submit',verifyUserToken, submitMockTest);
 
-router.get('/:mockTestId', verifyUserToken, getMockTestResult);
+router.get('/:mockTestId/:resultId', verifyUserToken, getMockTestResult);
 
 module.exports = router;

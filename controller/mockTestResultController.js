@@ -3,142 +3,300 @@ const { submitMockTestService } = require('../service/mockTestResultService');
 const UserMockTestResult = require('../model/userMockTestResultModel');
 const { successResponse, errorResponse } = require('../utils/responseHandler');
 
-// exports.submitMockTest = async (req, res) => {
-//   try {
-//     const userId = req.user.id; // from token
-//     const { mockTestId, packageId, answers } = req.body;
 
-//     const result = await submitMockTestService({ userId, mockTestId, packageId, answers });
-
-//     return successResponse(res, 'Mock test submitted successfully', result);
-//   } catch (err) {
-//     console.error(err);
-//     return errorResponse(res, 'Submission failed');
-//   }
-// };
 exports.submitMockTest = async (req, res) => {
   try {
-    const userId = req.user.id; // from token
+    // ✅ UserId token se aayega
+    const userId = req.user._id;
+
     const { mockTestId, packageId, answers } = req.body;
 
-    const result = await submitMockTestService({ userId, mockTestId, packageId, answers });
+    if (!answers || !Array.isArray(answers) || answers.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Answers array is required and cannot be empty",
+      });
+    }
 
-    return successResponse(res, 'Mock test submitted successfully', result);
-  } catch (err) {
-    console.error(err);
-    return errorResponse(res, err.message || 'Submission failed', 400);
+    // ✅ Attempt Number nikalna
+    const previousAttempts = await UserMockTestResult.countDocuments({ userId, mockTestId });
+
+    
+    if (previousAttempts >= 3) {
+      return res.status(400).json({
+        success: false,
+        message: "You have already attempted this mock test 3 times. No more attempts allowed.",
+      });
+    }
+
+    const attemptNumber = previousAttempts + 1;
+
+    let attempted = 0,
+      correct = 0,
+      wrong = 0;
+    let processedResponses = [];
+
+    for (let ans of answers) {
+      // Case 1: Normal Question
+      if (ans.selectedOption) {
+        attempted++;
+        let isCorrect = false;
+
+        if (ans.selectedOption === ans.correctAnswer) {
+          isCorrect = true;
+          correct++;
+        } else {
+          wrong++;
+        }
+
+        processedResponses.push({
+          questionId: ans.questionId,
+          subQuestionId: null,
+          selectedOption: ans.selectedOption,
+          correctAnswer: ans.correctAnswer || null,
+          isCorrect,
+        });
+      }
+
+      // Case 2: Sub Questions
+      if (ans.subAnswers && Array.isArray(ans.subAnswers)) {
+        ans.subAnswers.forEach((sub) => {
+          if (sub.selectedOption) attempted++;
+
+          let isCorrect = false;
+          if (sub.selectedOption && sub.selectedOption === sub.correctAnswer) {
+            isCorrect = true;
+            correct++;
+          } else if (sub.selectedOption) {
+            wrong++;
+          }
+
+          processedResponses.push({
+            questionId: ans.questionId,
+            subQuestionId: sub.subQuestionId,
+            selectedOption: sub.selectedOption,
+            correctAnswer: sub.correctAnswer || null,
+            isCorrect,
+          });
+        });
+      }
+    }
+
+    const unattempted = processedResponses.length - attempted;
+    const totalMarks = correct;
+
+    const newResult = new UserMockTestResult({
+      userId,
+       mockTestId: req.body.mockTestId, 
+      packageId,
+      attemptNumber,
+      attempted,
+      correct,
+      wrong,
+      unattempted,
+      totalMarks,
+      responses: processedResponses,
+    });
+
+    await newResult.save();
+
+    const populatedResult = await UserMockTestResult.findById(newResult._id)
+      .populate("responses.questionId")
+      .populate("responses.subQuestionId"); // ab ye chalega
+
+    return res.json({
+      success: true,
+      message: "Mock test submitted successfully",
+      data: populatedResult,
+    });
+  } catch (error) {
+    console.error("Submit Mock Test Error:", error);
+    return res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 
-// exports.getMockTestResult = async (req, res) => {
+
+// const UserMockTestResult = require("../models/UserMockTestResult");
+// const Question = require("../model/questionModel");   // ✅ Question model import
+// const SubQuestion = require("../model/subQuestionModel"); // ✅ SubQuestion model import
+
+// exports.submitMockTest = async (req, res) => {
 //   try {
-//     const userId = req.user.id;
-//     const { mockTestId } = req.params;
+//     const userId = req.user._id;
+//     const { mockTestId, packageId, answers } = req.body;
 
-//     const result = await UserMockTestResult.findOne({ userId, mockTestId })
-//       .populate('responses.questionId', 'questionText options')
-//       .lean();
+//     if (!answers || !Array.isArray(answers) || answers.length === 0) {
+//       return res.status(400).json({
+//         success: false,
+//         message: "Answers array is required and cannot be empty",
+//       });
+//     }
 
-//     if (!result) return errorResponse(res, 'Result not found', 404);
+//     // ✅ Attempt Number check
+//     const previousAttempts = await UserMockTestResult.countDocuments({ userId, mockTestId });
 
-//     return successResponse(res, 'Mock test result fetched', result);
-//   } catch (err) {
-//     console.error(err);
-//     return errorResponse(res, 'Error fetching result');
+//     if (previousAttempts >= 3) {
+//       return res.status(400).json({
+//         success: false,
+//         message: "You have already attempted this mock test 3 times. No more attempts allowed.",
+//       });
+//     }
+
+//     const attemptNumber = previousAttempts + 1;
+
+//     let attempted = 0,
+//       correct = 0,
+//       wrong = 0;
+
+//     let processedResponses = [];
+
+//     for (let ans of answers) {
+//       // ✅ Fetch main question from DB
+//       const question = await Question.findById(ans.questionId).lean();
+
+//       if (ans.selectedOption) {
+//         attempted++;
+
+//         let isCorrect = ans.selectedOption === (question?.correctAnswer || null);
+//         if (isCorrect) correct++;
+//         else wrong++;
+
+//         processedResponses.push({
+//           questionId: ans.questionId,
+//           subQuestionId: null,
+//           selectedOption: ans.selectedOption,
+//           correctAnswer: question?.correctAnswer || null, // DB se uthaya
+//           isCorrect,
+//         });
+//       }
+
+//       // ✅ Sub Questions
+//       if (ans.subAnswers && Array.isArray(ans.subAnswers)) {
+//         for (let sub of ans.subAnswers) {
+//           const subQ = await SubQuestion.findById(sub.subQuestionId).lean();
+
+//           if (sub.selectedOption) attempted++;
+
+//           let isCorrect = sub.selectedOption === (subQ?.correctAnswer || null);
+//           if (isCorrect) correct++;
+//           else if (sub.selectedOption) wrong++;
+
+//           processedResponses.push({
+//             questionId: ans.questionId,
+//             subQuestionId: sub.subQuestionId,
+//             selectedOption: sub.selectedOption,
+//             correctAnswer: subQ?.correctAnswer || null, // DB se uthaya
+//             isCorrect,
+//           });
+//         }
+//       }
+//     }
+
+//     const unattempted = answers.length - attempted;
+//     const totalMarks = correct;
+
+//     const newResult = new UserMockTestResult({
+//       userId,
+//       mockTestId,
+//       packageId,
+//       attemptNumber,
+//       attempted,
+//       correct,
+//       wrong,
+//       unattempted,
+//       totalMarks,
+//       responses: processedResponses,
+//     });
+
+//     await newResult.save();
+
+//     const populatedResult = await UserMockTestResult.findById(newResult._id)
+//       .populate("responses.questionId")
+//       .populate("responses.subQuestionId");
+
+//     return res.json({
+//       success: true,
+//       message: "Mock test submitted successfully",
+//       data: populatedResult,
+//     });
+//   } catch (error) {
+//     console.error("Submit Mock Test Error:", error);
+//     return res.status(500).json({
+//       success: false,
+//       message: error.message,
+//     });
 //   }
 // };
+
+
 
 exports.getMockTestResult = async (req, res) => {
   try {
-    const { mockTestId } = req.params;
-    const userId = req.user.id;
+    const { resultId, mockTestId } = req.params;
+    const query = {};
 
-    // ✅ include mockTestId in query
-  const result = await UserMockTestResult.findOne({ userId, mockTestId })
-  .populate({
-    path: "mockTestId",
-    model: "MockTest", // ✅ explicitly set model
-    select: "mockTestName duration subjects totalQuestions"
-  })
-  .populate({
-    path: "responses.questionId",
-    model: "QuestionBank", // ✅ explicitly set model
-    select: "questionText correctAnswer subjectId",
-    populate: {
-      path: "subjectId",
-      model: "Subject", // ✅ explicitly set model
-      select: "name"
-    }
-  })
-  .lean();
+    if (resultId) query._id = resultId;
+    if (mockTestId) query.mockTestId = mockTestId;
 
+    let result = await UserMockTestResult.findOne(query)
+      .populate({
+        path: "mockTestId",
+        select: "mockTestName duration subjects totalQuestions"
+      })
+      .populate({
+        path: "responses.questionId",
+        select: "classId subjectId medium status module topicName typeOfQuestion questionType questionText correctAnswer options reviewStatus updatedBy createdAt updatedAt",
+        populate: {
+          path: "subjectId",
+          select: "name"
+        }
+      })
+      .populate({
+        path: "responses.subQuestionId",
+        select: "parentId questionText options correctAnswer createdAt updatedAt"
+      })
+      .lean();
 
     if (!result) {
-      return res.status(404).json({ message: "Result not found" });
+      return res.status(404).json({
+        success: false,
+        message: "Result not found"
+      });
     }
 
-    // ✅ Subject-wise aggregation
-    const subjectsMap = {};
-    result.responses.forEach(r => {
-      if (!r.questionId) return;
+    // 🔥 Add correctAnswer from populated question/subQuestion
+    result.responses = result.responses.map(r => {
+      let correctAnswer = r.correctAnswer || null;
 
-      const subjId = r.questionId.subjectId?._id?.toString();
-      if (!subjId) return;
-
-      if (!subjectsMap[subjId]) {
-        subjectsMap[subjId] = {
-          subjectId: subjId,
-          subjectName: r.questionId.subjectId?.name || "Unknown",
-          attemptedQuestions: 0,
-          correctQuestions: 0,
-          incorrectQuestions: 0,
-          unattemptedQuestions: 0,
-          totalQuestions: 0,
-          score: 0,
-        };
-      }
-
-      subjectsMap[subjId].totalQuestions++;
-      if (r.selectedOption) {
-        subjectsMap[subjId].attemptedQuestions++;
-        if (r.isCorrect) {
-          subjectsMap[subjId].correctQuestions++;
-          subjectsMap[subjId].score += 1;
-        } else {
-          subjectsMap[subjId].incorrectQuestions++;
-          subjectsMap[subjId].score -= 0.5;
+      if (!correctAnswer) {
+        if (r.subQuestionId && r.subQuestionId.correctAnswer) {
+          correctAnswer = r.subQuestionId.correctAnswer;
+        } else if (r.questionId && r.questionId.correctAnswer) {
+          correctAnswer = r.questionId.correctAnswer;
         }
-      } else {
-        subjectsMap[subjId].unattemptedQuestions++;
       }
+
+      return {
+        ...r,
+        correctAnswer
+      };
     });
 
-    // ✅ Final Response
-    const responseData = {
-      mockTestId: result.mockTestId?._id || null,
-      mockTestName: result.mockTestId?.mockTestName || "Unknown",   // ✅ fixed
-      duration: result.mockTestId?.duration || 0,                   // ✅ fixed
-      attemptNumber: result.attemptNumber,
-      attempted: result.attempted,
-      correct: result.correct,
-      wrong: result.wrong,
-      unattempted: result.unattempted,
-      totalMarks: result.totalMarks,
-      subjects: Object.values(subjectsMap),
-      questions: result.responses.map(r => ({
-        questionId: r.questionId?._id || null,
-        questionText: r.questionId?.questionText || "N/A",
-        selectedOption: r.selectedOption || null,
-        correctAnswer: r.questionId?.correctAnswer || null,
-        subjectId: r.questionId?.subjectId?._id || null,
-        subjectName: r.questionId?.subjectId?.name || "Unknown",
-        isCorrect: r.isCorrect
-      }))
-    };
-
-    return res.status(200).json({ message: "Success", data: responseData });
+    res.json({
+      success: true,
+      message: "Mock test result fetched successfully",
+      data: result
+    });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Server error", error: error.message });
+    console.error("Error fetching mock test result:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error",
+      error: error.message
+    });
   }
 };
+

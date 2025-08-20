@@ -1,5 +1,12 @@
 const mongoose = require("mongoose");
 
+
+const subQuestionSchema = new mongoose.Schema({
+  questionText: { type: String },
+  options: [{ type: String }],
+  correctAnswer: { type: String }
+}, { _id: true }); // <-- ensure id generated
+
 const questionBankSchema = new mongoose.Schema({
   // mockTestId: { type: mongoose.Schema.Types.ObjectId, ref: "MockTest", required: true },
   classId: { type: mongoose.Schema.Types.ObjectId, ref: "ClassMaster", required: true },
@@ -25,7 +32,8 @@ updatedBy: {
     default: "edited"
   },
   
-    updatedBy: { type: String } 
+    updatedBy: { type: String } ,
+      subQuestions: [subQuestionSchema]
 }, { timestamps: true });
 
 questionBankSchema.index({

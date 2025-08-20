@@ -66,6 +66,7 @@ const getQuestions = async (filters) => {
       const subQs = await SubQuestion.find({ parentId: q._id });
 
       formattedQuestion.subQuestions = subQs.map((subQ) => ({
+        _id: subQ._id, 
         questionText: subQ.questionText,
         options: subQ.options,
         correctAnswer: subQ.correctAnswer

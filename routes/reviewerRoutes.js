@@ -17,5 +17,9 @@ router.get('/questions/history', reviewerController.getReviewHistory);
 
 // DELETE
 // router.delete('/questions/:id', reviewerController.deleteQuestion);
+
+// Multiple delete
+router.delete('/questions', reviewerController.deleteMultipleQuestions);
+
 module.exports = router;
  

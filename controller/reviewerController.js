@@ -180,6 +180,27 @@ const data = await reviewerService.getAllReviewHistory(filters);
   }
 };
 
+const deleteMultipleQuestions = async (req, res) => {
+  try {
+    const { ids } = req.body; // frontend se ids array aayega
+
+    if (!ids || !Array.isArray(ids) || ids.length === 0) {
+      return errorResponse(res, "Please provide an array of IDs to delete", 400);
+    }
+
+    const result = await Question.deleteMany({ _id: { $in: ids } });
+
+    if (result.deletedCount === 0) {
+      return errorResponse(res, "No questions found for given IDs", 404);
+    }
+
+    return successResponse(res, `${result.deletedCount} questions deleted successfully`);
+  } catch (err) {
+    console.error("Error in deleteMultipleQuestions:", err);
+    return errorResponse(res, "Internal server error", 500);
+  }
+};
+
 const deleteQuestion = async (req, res) => {
   try {
     const { id } = req.params;
@@ -202,5 +223,6 @@ module.exports = {
   updateQuestion,
   deleteQuestion,
   approveQuestion,
-  getReviewHistory
+  getReviewHistory,
+  deleteMultipleQuestions
 };

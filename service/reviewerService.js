@@ -45,6 +45,7 @@
 
 // const Question = require('../model/questionModel');
 const SubQuestion = require('../model/subQuestionModel'); // import this
+const reviewStatus = require("../model/questionModel");
 
 const getQuestions = async (filters) => {
   const query = {};
@@ -84,30 +85,86 @@ const getQuestions = async (filters) => {
   return result;
 };
 
+// const getAllReviewHistory = async (filters = {}) => {
+//   const query = {};
+
+//   if (filters.classId) query.classId = filters.classId;
+//   if (filters.subjectId) query.subjectId = filters.subjectId;
+//   if (filters.medium) query.medium = filters.medium;
+//   if (filters.status) query.status = filters.status;
+
+//   if (filters.from || filters.to) {
+//     query.createdAt = {};
+//     if (filters.from) query.createdAt.$gte = new Date(filters.from);
+//     if (filters.to) query.createdAt.$lte = new Date(filters.to);
+//   }
+
+//   const total = await Question.countDocuments(query);
+
+//   const questions = await Question.find(query)
+//     .populate('classId', 'class')
+//     .populate('subjectId', 'subject')
+//     .sort({ createdAt: -1 })
+//     .skip(filters.offset)
+//     .limit(filters.limit);
+
+//   return { total, questions };
+// };
+// service/reviewerService.js
+
 const getAllReviewHistory = async (filters = {}) => {
-  const query = {};
+  try {
+    let query = {};
 
-  if (filters.classId) query.classId = filters.classId;
-  if (filters.subjectId) query.subjectId = filters.subjectId;
-  if (filters.medium) query.medium = filters.medium;
-  if (filters.status) query.status = filters.status;
+    // 🔹 Class filter
+    if (filters.classId) {
+      query.classId = filters.classId;
+    }
 
-  if (filters.from || filters.to) {
-    query.createdAt = {};
-    if (filters.from) query.createdAt.$gte = new Date(filters.from);
-    if (filters.to) query.createdAt.$lte = new Date(filters.to);
+    // 🔹 Subject filter
+    if (filters.subjectId) {
+      query.subjectId = filters.subjectId;
+    }
+
+    // 🔹 Medium filter
+    if (filters.medium) {
+      query.medium = filters.medium;
+    }
+
+    // 🔹 Review Status filter (approved / edited / multiple)
+    if (filters.reviewStatus) {
+      if (typeof filters.reviewStatus === "string" && filters.reviewStatus.includes(",")) {
+        // agar comma separated hai => ?reviewStatus=approved,edited
+        query.reviewStatus = { $in: filters.reviewStatus.split(",") };
+      } else if (Array.isArray(filters.reviewStatus)) {
+        query.reviewStatus = { $in: filters.reviewStatus };
+      } else {
+        query.reviewStatus = filters.reviewStatus;
+      }
+    }
+
+    // 🔹 Date range filter
+    if (filters.from && filters.to) {
+      query.createdAt = {
+        $gte: new Date(filters.from + "T00:00:00.000Z"), // day start
+        $lte: new Date(filters.to + "T23:59:59.999Z"),   // day end
+      };
+    }
+
+    // 🔹 Count total matching records
+    const total = await reviewStatus.countDocuments(query);
+
+    // 🔹 Fetch paginated data
+    const questions = await reviewStatus.find(query)
+      .skip(filters.offset || 0)
+      .limit(filters.limit || 10)
+      .sort({ createdAt: -1 });
+
+    return { total, questions };
+  } catch (error) {
+    console.error("Service error in getAllReviewHistory:", error);
+    throw error;
   }
-
-  const total = await Question.countDocuments(query);
-
-  const questions = await Question.find(query)
-    .populate('classId', 'class')
-    .populate('subjectId', 'subject')
-    .sort({ createdAt: -1 })
-    .skip(filters.offset)
-    .limit(filters.limit);
-
-  return { total, questions };
 };
 
 module.exports = {

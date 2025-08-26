@@ -1,7 +1,5 @@
 const studentService = require("../service/studentService");
 const Student = require("../model/studentModel");
-
-
 // Student create withdrawal request
 exports.createWithdrawal = async (req, res) => {
   try {
@@ -125,6 +123,39 @@ exports.loginVerifyStudent = async (req, res) => {
   const { email, otp } = req.body;
   try {
     const result = await studentService.loginVerifyStudent(email, otp);
+    res.status(200).json(result);
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+};
+
+
+exports.getBankDetails = async (req, res) => {
+  try {
+    const studentId = req.user.id; // From token
+    const bankDetails = await studentService.getBankDetails(studentId);
+    if (!bankDetails) {
+      return res.status(404).json({ message: "Bank details not found" });
+    }
+    res.status(200).json({ success: true, bankDetails });
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+};
+
+
+
+exports.addOrUpdateBankDetails = async (req, res) => {
+  try {
+    const studentId = req.user.id; // token provides the student ID
+
+    const data = {
+      ...req.body,
+      cancelledCheque: req.file ? req.file.path : undefined
+    };
+
+    const result = await studentService.addOrUpdateBankDetails(studentId, data);
+
     res.status(200).json(result);
   } catch (err) {
     res.status(400).json({ message: err.message });

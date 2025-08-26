@@ -9,9 +9,7 @@ const jwt = require("jsonwebtoken");
 const Coordinator = require("../model/coordinatorModel");
 const Order = require("../model/Order");
 const Withdrawal = require("../model/withdrawalModel");
-//  Student Add Service
-
-
+const StudentBank = require("../model/bankdetails");
 // Student request create karega
 exports.createWithdrawal = async (studentId, amount) => {
   if (!studentId || !amount) throw new Error("studentId and amount required");
@@ -195,3 +193,43 @@ exports.loginVerifyStudent = async (email, otp) => {
  return { token, student };
 };
 
+
+
+
+exports.addOrUpdateBankDetails = async (studentId, data) => {
+  const { accountHolderName, accountNumber, branch, ifscCode, accountType, panNumber, cancelledCheque } = data;
+
+  let bankDetails = await StudentBank.findOne({ studentId });
+
+  if (bankDetails) {
+    // Update existing details
+    bankDetails.accountHolderName = accountHolderName;
+    bankDetails.accountNumber = accountNumber;
+    bankDetails.branch = branch;
+    bankDetails.ifscCode = ifscCode;
+    bankDetails.accountType = accountType;
+    bankDetails.panNumber = panNumber;
+    if (cancelledCheque) bankDetails.cancelledCheque = cancelledCheque;
+
+    await bankDetails.save();
+    return { message: "Bank details updated", bankDetails };
+  } else {
+    // Create new details
+    bankDetails = await StudentBank.create({
+      studentId,
+      accountHolderName,
+      accountNumber,
+      branch,
+      ifscCode,
+      accountType,
+      panNumber,
+      cancelledCheque
+    });
+    return { message: "Bank details added", bankDetails };
+  }
+};
+
+
+exports.getBankDetails = async (studentId) => {
+  return await StudentBank.findOne({ studentId });
+};

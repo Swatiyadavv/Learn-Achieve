@@ -32,7 +32,7 @@ module.exports = router;
 // Simple route now
 router.post("/bank", uploadCheque,verifyUserToken, studentController.addOrUpdateBankDetails);
 
-router.route("/").get(verifyUserToken, studentController.getBankDetails)
+router.route("/").get(studentController.getBankDetails)
 
 
 module.exports = router;

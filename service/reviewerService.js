@@ -42,6 +42,7 @@
 
 // module.exports = { getQuestions,getAllReviewHistory };
  const Question = require('../model/questionModel');
+const QuestionBank = require("../model/questionModel"); 
 
 // const Question = require('../model/questionModel');
 const SubQuestion = require('../model/subQuestionModel'); // import this
@@ -112,59 +113,91 @@ const getQuestions = async (filters) => {
 // };
 // service/reviewerService.js
 
-const getAllReviewHistory = async (filters = {}) => {
-  try {
-    let query = {};
+// const getAllReviewHistory = async (filters = {}) => {
+//   try {
+//     let query = {};
 
-    // 🔹 Class filter
-    if (filters.classId) {
-      query.classId = filters.classId;
-    }
+//     // 🔹 Class filter
+//     if (filters.classId) {
+//       query.classId = filters.classId;
+//     }
 
-    // 🔹 Subject filter
-    if (filters.subjectId) {
-      query.subjectId = filters.subjectId;
-    }
+//     // 🔹 Subject filter
+//     if (filters.subjectId) {
+//       query.subjectId = filters.subjectId;
+//     }
 
-    // 🔹 Medium filter
-    if (filters.medium) {
-      query.medium = filters.medium;
-    }
+//     // 🔹 Medium filter
+//     if (filters.medium) {
+//       query.medium = filters.medium;
+//     }
 
-    // 🔹 Review Status filter (approved / edited / multiple)
-    if (filters.reviewStatus) {
-      if (typeof filters.reviewStatus === "string" && filters.reviewStatus.includes(",")) {
-        // agar comma separated hai => ?reviewStatus=approved,edited
-        query.reviewStatus = { $in: filters.reviewStatus.split(",") };
-      } else if (Array.isArray(filters.reviewStatus)) {
-        query.reviewStatus = { $in: filters.reviewStatus };
-      } else {
-        query.reviewStatus = filters.reviewStatus;
-      }
-    }
+//     // 🔹 Review Status filter (approved / edited / multiple)
+//     if (filters.reviewStatus) {
+//       if (typeof filters.reviewStatus === "string" && filters.reviewStatus.includes(",")) {
+//         // agar comma separated hai => ?reviewStatus=approved,edited
+//         query.reviewStatus = { $in: filters.reviewStatus.split(",") };
+//       } else if (Array.isArray(filters.reviewStatus)) {
+//         query.reviewStatus = { $in: filters.reviewStatus };
+//       } else {
+//         query.reviewStatus = filters.reviewStatus;
+//       }
+//     }
 
-    // 🔹 Date range filter
-    if (filters.from && filters.to) {
-      query.createdAt = {
-        $gte: new Date(filters.from + "T00:00:00.000Z"), // day start
-        $lte: new Date(filters.to + "T23:59:59.999Z"),   // day end
-      };
-    }
+//     // 🔹 Date range filter
+//     if (filters.from && filters.to) {
+//       query.createdAt = {
+//         $gte: new Date(filters.from + "T00:00:00.000Z"), // day start
+//         $lte: new Date(filters.to + "T23:59:59.999Z"),   // day end
+//       };
+//     }
 
-    // 🔹 Count total matching records
-    const total = await reviewStatus.countDocuments(query);
+//     // 🔹 Count total matching records
+//     const total = await reviewStatus.countDocuments(query);
 
-    // 🔹 Fetch paginated data
-    const questions = await reviewStatus.find(query)
-      .skip(filters.offset || 0)
-      .limit(filters.limit || 10)
-      .sort({ createdAt: -1 });
+//     // 🔹 Fetch paginated data
+//     const questions = await reviewStatus.find(query)
+//       .skip(filters.offset || 0)
+//       .limit(filters.limit || 10)
+//       .sort({ createdAt: -1 });
 
-    return { total, questions };
-  } catch (error) {
-    console.error("Service error in getAllReviewHistory:", error);
-    throw error;
+//     return { total, questions };
+//   } catch (error) {
+//     console.error("Service error in getAllReviewHistory:", error);
+//     throw error;
+//   }
+// };
+const getAllReviewHistory = async (filters) => {
+  let query = {};
+
+  if (filters.classId) query.classId = filters.classId;
+  if (filters.subjectId) query.subjectId = filters.subjectId;
+  if (filters.medium) query.medium = filters.medium;
+  if (filters.reviewStatus) query.reviewStatus = filters.reviewStatus;
+
+  if (filters.from && filters.to) {
+    query.updatedAt = { $gte: new Date(filters.from), $lte: new Date(filters.to) };
   }
+
+  const questions = await QuestionBank.find(query)
+    .populate("classId", "class")     // ✅ ClassMaster ka sirf name field
+    .populate("subjectId", "subject")   // ✅ Subject ka sirf name field
+    .skip(filters.offset)
+    .limit(filters.limit)
+    .lean();
+
+  const total = await QuestionBank.countDocuments(query);
+
+  // response ko format karna taaki name null na aaye
+  const formattedQuestions = questions.map(q => ({
+    ...q,
+    className: q.classId?.class || null,
+    classId: q.classId?._id || q.classId,
+    subjectName: q.subjectId?.subject || null,
+    subjectId: q.subjectId?._id || q.subjectId,
+  }));
+
+  return { total, questions: formattedQuestions };
 };
 
 module.exports = {

@@ -153,22 +153,46 @@ const approveQuestion = async (req, res) => {
 //   }
 // };
 
+// const getReviewHistory = async (req, res) => {
+//   try {
+//     const filters = {
+//       classId: req.query.classId,
+//       subjectId: req.query.subjectId,
+//       medium: req.query.medium,
+//       reviewStatus: req.query.reviewStatus,  // yeh aa raha hai query se
+//       from: req.query.from,
+//       to: req.query.to,
+//       limit: parseInt(req.query.limit) || 10,
+//       offset: parseInt(req.query.offset) || 0,
+//     };
+
+//   // controller
+// const data = await reviewerService.getAllReviewHistory(filters);
+
+
+//     return successResponse(res, "Review history fetched successfully", {
+//       total: data.total,
+//       data: data.questions,
+//     });
+//   } catch (error) {
+//     console.error("Error in getReviewHistory:", error);
+//     return errorResponse(res, "Internal server error", 500);
+//   }
+// };
 const getReviewHistory = async (req, res) => {
   try {
     const filters = {
       classId: req.query.classId,
       subjectId: req.query.subjectId,
       medium: req.query.medium,
-      reviewStatus: req.query.reviewStatus,  // yeh aa raha hai query se
+      reviewStatus: req.query.reviewStatus,
       from: req.query.from,
       to: req.query.to,
       limit: parseInt(req.query.limit) || 10,
       offset: parseInt(req.query.offset) || 0,
     };
 
-  // controller
-const data = await reviewerService.getAllReviewHistory(filters);
-
+    const data = await reviewerService.getAllReviewHistory(filters);
 
     return successResponse(res, "Review history fetched successfully", {
       total: data.total,

@@ -180,8 +180,8 @@ const getAllReviewHistory = async (filters) => {
   }
 
   const questions = await QuestionBank.find(query)
-    .populate("classId", "class")     // ✅ ClassMaster ka sirf name field
-    .populate("subjectId", "subject")   // ✅ Subject ka sirf name field
+    .populate("classId", "class")     // ClassMaster ka sirf name field
+    .populate("subjectId", "subject")   // Subject ka sirf name field
     .skip(filters.offset)
     .limit(filters.limit)
     .lean();
